@@ -360,6 +360,7 @@ details.settings[open] summary{margin-bottom:12px}
             <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
               <textarea id="vcText" placeholder="مثال: اليوم طلعنا سبلة من عنبر ٢ عشرين كيس للمستودع، وطلعنا ٦ عبوات خطرة، وصرفنا دواء أموكسيسيلين، ورجعنا عبوة الفيتامين الفاضية أمس، وسوّينا نظافة السقايات."></textarea>
               <div class="partial" id="vcPartial"></div>
+              <small class="muted">في الجوال تقدر بعد تضغط داخل الخانة وتستخدم ميكروفون الكيبورد 🎤 وتتكلّم، والكلام ينكتب لحاله.</small>
             </div>
           </div>
           <div class="row" style="margin-top:10px;justify-content:space-between">
@@ -681,21 +682,44 @@ details.settings[open] summary{margin-bottom:12px}
   /* microphone: the browser's own speech recognition (Chrome, Edge, Safari) */
   caps.dictation = (() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return null;
-    let rec = null, state = 'idle'; const hs = {p: [], f: [], s: []};
+    /* Android Chrome repeats results in continuous mode, so there we listen phrase by phrase and restart until the person taps stop */
+    const android = /Android/i.test(navigator.userAgent);
+    const MAP = {'not-allowed': 'not_granted', 'service-not-allowed': 'not_granted', 'audio-capture': 'no_mic', 'network': 'network', 'no-speech': 'no_speech', 'aborted': 'stopped', 'language-not-supported': 'unavailable'};
+    let rec = null, state = 'idle', wanted = false, lastFinal = '', startRes = null, startRej = null;
+    const hs = {p: [], f: [], s: []};
     const emit = (k, v) => hs[k].forEach(h => { try { h(v); } catch {} });
     const set = (st, reason) => { state = st; emit('s', reason ? {state: st, reason} : {state: st}); };
+    const open = () => {
+      rec = new SR(); rec.lang = 'ar-SA'; rec.continuous = !android; rec.interimResults = true; rec.maxAlternatives = 1;
+      rec.onstart = () => { if (state !== 'listening') set('listening'); if (startRes) { startRes(); startRes = startRej = null; } };
+      rec.onresult = e => {
+        let interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i], t = (r[0] && r[0].transcript || '').trim();
+          if (r.isFinal) { if (t && t !== lastFinal) { lastFinal = t; emit('f', {text: ' ' + t + '،'}); } }
+          else interim += r[0].transcript;
+        }
+        emit('p', {text: interim});
+      };
+      rec.onerror = e => {
+        const c = MAP[e.error] || 'network';
+        if (c === 'no_speech' && wanted && state === 'listening') return;  // silence: keep listening, onend restarts
+        wanted = false;
+        if (startRej) { startRej({code: c}); startRes = startRej = null; }
+        set('idle', c);
+      };
+      rec.onend = () => {
+        emit('p', {text: ''});
+        if (wanted) { try { rec.start(); return; } catch { try { open(); rec.start(); return; } catch {} } }
+        if (state !== 'idle') set('idle', 'stopped');
+      };
+    };
     return {
       start() { return new Promise((res, rej) => {
-        try {
-          rec = new SR(); rec.lang = 'ar-SA'; rec.continuous = true; rec.interimResults = true;
-          rec.onstart = () => { set('listening'); res(); };
-          rec.onresult = e => { let interim = ''; for (let i = e.resultIndex; i < e.results.length; i++) { const r = e.results[i]; if (r.isFinal) emit('f', {text: ' ' + r[0].transcript.trim() + '،'}); else interim += r[0].transcript; } emit('p', {text: interim}); };
-          rec.onerror = e => { const c = ({'not-allowed': 'not_granted', 'service-not-allowed': 'not_granted', 'audio-capture': 'not_granted', 'no-speech': 'stopped', 'aborted': 'stopped', 'network': 'upstream_error'})[e.error] || 'upstream_error'; if (state === 'starting') rej({code: c}); set('idle', c); };
-          rec.onend = () => { emit('p', {text: ''}); if (state !== 'idle') set('idle', 'stopped'); };
-          set('starting'); rec.start();
-        } catch { rej({code: 'unavailable'}); }
+        try { wanted = true; lastFinal = ''; startRes = res; startRej = rej; set('starting'); open(); rec.start(); }
+        catch { wanted = false; startRes = startRej = null; set('idle', 'unavailable'); rej({code: 'unavailable'}); }
       }); },
-      stop() { return new Promise(r => { if (!rec || state === 'idle') return r(); set('finishing'); const prev = rec.onend; rec.onend = () => { prev && prev(); r(); }; try { rec.stop(); } catch { r(); } }); },
+      stop() { return new Promise(r => { wanted = false; if (!rec || state === 'idle') return r(); set('finishing'); const prev = rec.onend; rec.onend = () => { prev && prev(); r(); }; try { rec.stop(); } catch { set('idle', 'stopped'); r(); } }); },
       active() { return state !== 'idle'; },
       onPartial(h) { hs.p.push(h); return () => {}; }, onFinal(h) { hs.f.push(h); return () => {}; }, onState(h) { hs.s.push(h); return () => {}; },
     };
@@ -1908,16 +1932,23 @@ $('#clearEx').onclick = async e => {
 /* ---------- voice ---------- */
 const ta = $('#vcText'); let vItems = [], vCtl = null, dictLang = 'ar';
 const micBtn = $('#micBtn');
+/* what to tell the person when the microphone can't run, in plain words */
+const IN_CLAUDE_APP = /\bClaude\//.test(navigator.userAgent);
+const MIC_HELP = {
+  unsupported: 'متصفحك ما يدعم التسجيل الصوتي. افتح الموقع في Chrome أو Edge أو Safari، أو اضغط ميكروفون الكيبورد في جوالك وتكلّم داخل الخانة.',
+  not_granted: IN_CLAUDE_APP
+    ? 'الميكروفون ما يشتغل داخل متصفح تطبيق Claude. افتح الرابط في Chrome أو Edge أو في جوالك.'
+    : 'المتصفح منع الميكروفون. اضغط على أيقونة القفل جنب رابط الموقع فوق، واختر السماح للميكروفون (Allow)، بعدين اضغط الميكروفون مرة ثانية.',
+  no_mic: 'ما لقيت ميكروفون شغّال في الجهاز. تأكد إنه موصول ومو مستخدم في برنامج ثاني.',
+  network: 'التعرّف على الكلام يحتاج اتصال بالإنترنت. تأكد من الاتصال وجرّب مرة ثانية.',
+  no_speech: 'ما سمعت كلام. تكلّم بعد ما يتلوّن الزر بالأحمر.',
+  unavailable: 'التسجيل الصوتي بالعربي مو متاح في هذا المتصفح. جرّب Chrome أو Edge، أو ميكروفون الكيبورد في جوالك.',
+};
+const micMsg = (code, bad) => { $('#vcStatus').textContent = MIC_HELP[code] || 'تعذّر تشغيل الميكروفون، جرّب مرة ثانية.'; if (bad) toast(MIC_HELP[code] || 'تعذّر تشغيل الميكروفون', 'bad'); };
 micBtn.onclick = () => {
-  if (!dict) { toast('الميكروفون يشتغل في متصفح Chrome أو Edge، أو في تطبيق Claude. تقدر تكتب النص بدلاً منه.'); return; }
+  if (!dict) { micMsg('unsupported', true); return; }
   if (dict.active()) { dict.stop().catch(() => {}); return; }
-  dict.start(dictLang ? {language: dictLang} : undefined).catch(er => {
-    const c = er && er.code;
-    if (c === 'unavailable' && dictLang) { dictLang = null; toast('اضغط الميكروفون مرة ثانية'); }
-    else if (c === 'not_granted') { toast('الميكروفون غير مسموح لهذه الصفحة. تقدر تكتب النص.', 'bad'); }
-    else if (c === 'rate_limited') toast('حاول بعد لحظات');
-    else if (c !== 'dismissed' && c !== 'stopped') toast('تعذّر تشغيل الميكروفون', 'bad');
-  });
+  dict.start().catch(er => { const c = er && er.code; if (c && c !== 'stopped' && c !== 'dismissed') micMsg(c, true); });
 };
 $('#vcClear').onclick = () => { ta.value = ''; $('#vcPartial').textContent = ''; };
 $('#vcCancel').onclick = () => { vItems = []; $('#vcPreviewWrap').hidden = true; };
@@ -2156,14 +2187,18 @@ C.use('assets').then(a => { assets = a; }).catch(() => {});
 C.use('sample').then(s => { sample = s; if (!s) $('#vcGo').title = 'التوزيع التلقائي غير متاح هنا'; }).catch(() => {});
 C.use('downloads').then(d => { downloads = d; if (!d) { $('#dlHtml').hidden = true; $('#dlCsv').hidden = true; } }).catch(() => {});
 C.use('dictation').then(d => {
-  dict = d; if (!d) { micBtn.title = 'الميكروفون غير متاح في هذا المتصفح'; micBtn.style.opacity = '.5'; return; }
+  dict = d; if (!d) { micBtn.title = 'الميكروفون غير متاح في هذا المتصفح'; micBtn.style.opacity = '.5'; $('#vcStatus').textContent = MIC_HELP.unsupported; return; }
   d.onPartial(({text}) => { $('#vcPartial').textContent = text; });
   d.onFinal(({text}) => { ta.value = ta.value ? ta.value + text : text.trimStart(); $('#vcPartial').textContent = ''; });
   d.onState(({state, reason}) => {
     const live = state === 'listening' || state === 'starting';
     micBtn.classList.toggle('live', live || state === 'finishing');
     micBtn.setAttribute('aria-label', live ? 'إيقاف الميكروفون' : 'تشغيل الميكروفون');
-    $('#vcStatus').textContent = state === 'listening' ? 'أسمعك… اضغط الميكروفون مرة ثانية إذا خلصت' : state === 'starting' ? 'جارِ تشغيل الميكروفون…' : state === 'finishing' ? 'لحظة…' : (reason === 'upstream_error' ? 'انقطع الميكروفون، حاول مرة ثانية' : '');
+    if (state === 'listening') $('#vcStatus').textContent = 'أسمعك… تكلّم، وإذا خلصت اضغط الميكروفون مرة ثانية ثم "وزّع على الأقسام"';
+    else if (state === 'starting') $('#vcStatus').textContent = 'جارِ تشغيل الميكروفون… إذا سألك المتصفح عن الميكروفون اختر "السماح"';
+    else if (state === 'finishing') $('#vcStatus').textContent = 'لحظة…';
+    else if (reason && reason !== 'stopped') micMsg(reason);
+    else $('#vcStatus').textContent = ta.value.trim() ? 'تمام. راجع النص واضغط "وزّع على الأقسام".' : '';
   });
 }).catch(() => {});
 })();
