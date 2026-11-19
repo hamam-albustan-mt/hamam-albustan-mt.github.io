@@ -2142,7 +2142,8 @@ C.use('db').then(d => {
   if (!db) { $('#noDb').hidden = false; setSync('الحفظ غير متاح', 'bad'); return; }
   const pending = new Set(COLS);
   const timer = setTimeout(() => setSync('تعذّر الوصول للبيانات حتى الآن…', 'warn'), 10000);
-  COLS.forEach(c => db.collection(c).onSnapshot(snap => {
+  /* includeMetadataChanges: hear the server's confirmation even when the cached copy was already right */
+  COLS.forEach(c => db.collection(c).onSnapshot({includeMetadataChanges: true}, snap => {
     S[c] = snap.docs.map(x => ({id: x.id, ...x.data()}));
     if (!snap.metadata.fromCache) { pending.delete(c); if (!pending.size) { clearTimeout(timer); setSync('محفوظ ومتزامن', 'good'); } }
     renderAll();
