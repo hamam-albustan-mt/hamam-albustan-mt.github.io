@@ -156,6 +156,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 50%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
 @media (prefers-reduced-motion:reduce){.mic.live{animation:none}}
 .partial{color:var(--muted);font-style:italic;min-height:1.4em;font-size:.9rem}
+.micnote:empty{display:none}
+.micnote{font-weight:600;font-size:.95rem;line-height:1.5;color:var(--ink);background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));border-radius:8px;padding:10px 12px}
+.micnote.ok{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
 .example{font-size:.85rem;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:8px 12px}
 .preview{display:flex;flex-direction:column;gap:10px}
 .pitem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
@@ -371,15 +374,13 @@ details.settings[open] summary{margin-bottom:12px}
             <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
               <textarea id="vcText" placeholder="مثال: اليوم طلعنا سبلة من عنبر ٢ عشرين كيس للمستودع، وطلعنا ٦ عبوات خطرة، وصرفنا دواء أموكسيسيلين، ورجعنا عبوة الفيتامين الفاضية أمس، وسوّينا نظافة السقايات."></textarea>
               <div class="partial" id="vcPartial"></div>
+              <div id="vcStatus" class="micnote" role="status" aria-live="polite"></div>
               <small class="muted">في الجوال تقدر بعد تضغط داخل الخانة وتستخدم ميكروفون الكيبورد 🎤 وتتكلّم، والكلام ينكتب لحاله.</small>
             </div>
           </div>
-          <div class="row" style="margin-top:10px;justify-content:space-between">
-            <div class="row">
-              <button class="btn pri" id="vcGo" type="button">وزّع على الأقسام</button>
-              <button class="btn ghost" id="vcClear" type="button">مسح النص</button>
-            </div>
-            <small id="vcStatus"></small>
+          <div class="row" style="margin-top:10px">
+            <button class="btn pri" id="vcGo" type="button">وزّع على الأقسام</button>
+            <button class="btn ghost" id="vcClear" type="button">مسح النص</button>
           </div>
           <div id="vcPreviewWrap" hidden style="margin-top:16px">
             <div class="card-h" style="margin-bottom:10px"><h3>راجع قبل الحفظ</h3><div class="row"><button class="btn ghost sm" id="vcCancel" type="button">إلغاء</button><button class="btn pri" id="vcSave" type="button">حفظ الكل</button></div></div>
@@ -1955,11 +1956,24 @@ const MIC_HELP = {
   no_speech: 'ما سمعت كلام. تكلّم بعد ما يتلوّن الزر بالأحمر.',
   unavailable: 'التسجيل الصوتي بالعربي مو متاح في هذا المتصفح. جرّب Chrome أو Edge، أو ميكروفون الكيبورد في جوالك.',
 };
-const micMsg = (code, bad) => { $('#vcStatus').textContent = MIC_HELP[code] || 'تعذّر تشغيل الميكروفون، جرّب مرة ثانية.'; if (bad) toast(MIC_HELP[code] || 'تعذّر تشغيل الميكروفون', 'bad'); };
+const micMsg = code => { const el = $('#vcStatus'); el.classList.remove('ok'); el.textContent = MIC_HELP[code] || 'تعذّر تشغيل الميكروفون. استخدم ميكروفون الكيبورد: اضغط داخل الخانة، بعدين 🎤 في الكيبورد.'; };
+MIC_HELP.empty = 'الخانة فاضية. اكتب فيها، أو اضغط الميكروفون الأخضر وتكلّم، أو استخدم ميكروفون الكيبورد 🎤 في جوالك. بعدها اضغط "وزّع على الأقسام".';
+MIC_HELP.stuck ='الميكروفون ما اشتغل في هذا المتصفح. استخدم ميكروفون الكيبورد بدلاً منه: اضغط داخل الخانة فوق، بعدين اضغط 🎤 في الكيبورد وتكلّم.';
+MIC_HELP.silent = 'الميكروفون شغّال بس ما وصلني كلام. تأكد إن المتصفح مسموح له بالميكروفون، وتكلّم بصوت واضح قريب من الجوال. وإذا ما نفع، استخدم ميكروفون الكيبورد 🎤.';
+MIC_HELP.ios_app = 'في الآيفون، التسجيل الصوتي ما يشتغل من أيقونة التطبيق. استخدم ميكروفون الكيبورد: اضغط داخل الخانة فوق، بعدين اضغط 🎤 في الكيبورد وتكلّم. أو افتح الرابط في Safari.';
+const IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IOS_APP = IOS && (matchMedia('(display-mode: standalone)').matches || navigator.standalone === true);
+let micState = 'idle', micWatch = null, heardSomething = false;
+const keyboardFallback = code => { micMsg(code, true); try { ta.focus(); } catch {} };
 micBtn.onclick = () => {
-  if (!dict) { micMsg('unsupported', true); return; }
+  if (IOS_APP) { keyboardFallback('ios_app'); return; }
+  if (!dict) { keyboardFallback('unsupported'); return; }
   if (dict.active()) { dict.stop().catch(() => {}); return; }
-  dict.start().catch(er => { const c = er && er.code; if (c && c !== 'stopped' && c !== 'dismissed') micMsg(c, true); });
+  heardSomething = false;
+  dict.start().catch(er => { const c = er && er.code; if (c && c !== 'stopped' && c !== 'dismissed') keyboardFallback(c); });
+  /* some browsers accept start() and then never begin listening: don't leave the person waiting */
+  clearTimeout(micWatch);
+  micWatch = setTimeout(() => { if (micState === 'starting') { dict.stop().catch(() => {}); keyboardFallback('stuck'); } }, 5000);
 };
 $('#vcClear').onclick = () => { ta.value = ''; $('#vcPartial').textContent = ''; };
 $('#vcCancel').onclick = () => { vItems = []; $('#vcPreviewWrap').hidden = true; };
@@ -2044,7 +2058,7 @@ function parseVoice(text) {
 window.__parseVoice = parseVoice;
 
 $('#vcGo').onclick = async () => {
-  const text = ta.value.trim(); if (!text) { toast('اكتب أو قل شيئًا أولاً'); return; }
+  const text = ta.value.trim(); if (!text) { micMsg('empty'); toast('الخانة فاضية'); try { ta.focus(); } catch {} return; }
   if (dict && dict.active()) await dict.stop().catch(() => {});
   const openMeds = [...new Set(S.meds.filter(m => !okDate(m.returnDate)).map(m => m.name))];
   const t = today();
@@ -2222,17 +2236,24 @@ C.use('sample').then(s => { sample = s; if (!s) $('#vcGo').title = 'التوزي
 C.use('downloads').then(d => { downloads = d; if (!d) { $('#dlHtml').hidden = true; $('#dlCsv').hidden = true; } }).catch(() => {});
 C.use('dictation').then(d => {
   dict = d; if (!d) { micBtn.title = 'الميكروفون غير متاح في هذا المتصفح'; micBtn.style.opacity = '.5'; $('#vcStatus').textContent = MIC_HELP.unsupported; return; }
-  d.onPartial(({text}) => { $('#vcPartial').textContent = text; });
-  d.onFinal(({text}) => { ta.value = ta.value ? ta.value + text : text.trimStart(); $('#vcPartial').textContent = ''; });
+  const note = (txt, ok) => { const el = $('#vcStatus'); el.textContent = txt; el.classList.toggle('ok', !!ok); };
+  d.onPartial(({text}) => { $('#vcPartial').textContent = text; if (text) heardSomething = true; });
+  d.onFinal(({text}) => { heardSomething = true; ta.value = ta.value ? ta.value + text : text.trimStart(); $('#vcPartial').textContent = ''; });
   d.onState(({state, reason}) => {
+    micState = state;
     const live = state === 'listening' || state === 'starting';
     micBtn.classList.toggle('live', live || state === 'finishing');
     micBtn.setAttribute('aria-label', live ? 'إيقاف الميكروفون' : 'تشغيل الميكروفون');
-    if (state === 'listening') $('#vcStatus').textContent = 'أسمعك… تكلّم، وإذا خلصت اضغط الميكروفون مرة ثانية ثم "وزّع على الأقسام"';
-    else if (state === 'starting') $('#vcStatus').textContent = 'جارِ تشغيل الميكروفون… إذا سألك المتصفح عن الميكروفون اختر "السماح"';
-    else if (state === 'finishing') $('#vcStatus').textContent = 'لحظة…';
-    else if (reason && reason !== 'stopped') micMsg(reason);
-    else $('#vcStatus').textContent = ta.value.trim() ? 'تمام. راجع النص واضغط "وزّع على الأقسام".' : '';
+    if (state === 'listening') { clearTimeout(micWatch); note('🔴 أسمعك… تكلّم الحين. إذا خلصت اضغط الميكروفون مرة ثانية، بعدين "وزّع على الأقسام".', true);
+      /* listening but nothing arrives: say so instead of staying silent */
+      micWatch = setTimeout(() => { if (micState === 'listening' && !heardSomething) note(MIC_HELP.silent); }, 9000); }
+    else if (state === 'starting') note('جارِ تشغيل الميكروفون… إذا سألك المتصفح عن الميكروفون اختر "السماح".', true);
+    else if (state === 'finishing') note('لحظة…', true);
+    else { clearTimeout(micWatch);
+      if (reason && reason !== 'stopped') micMsg(reason);
+      else if (ta.value.trim()) note('تمام. راجع النص واضغط "وزّع على الأقسام".', true);
+      else if (!heardSomething) note(MIC_HELP.silent);
+      else note(''); }
   });
 }).catch(() => {});
 })();
