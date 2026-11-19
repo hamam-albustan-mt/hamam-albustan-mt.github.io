@@ -1,0 +1,2091 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>سجل المتابعة البيئية لشركة حمام البستان</title>
+<link rel="icon" href="logo.png">
+<meta name="theme-color" content="#3a8a34">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px}
+img{max-width:100%}
+[hidden]{display:none!important}
+#auth{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:16px}
+#auth .box{width:min(420px,100%);display:flex;flex-direction:column;gap:14px;text-align:center}
+#auth .box img{width:150px;margin:0 auto;background:#fff;border-radius:16px;padding:8px}
+#auth form{display:flex;flex-direction:column;gap:10px;text-align:start}
+#auth .err{color:var(--bad);font-size:.9rem;min-height:1.2em}
+#auth .sep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem}
+#auth .sep::before,#auth .sep::after{content:"";flex:1;height:1px;background:var(--line)}
+.who{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.82rem;padding-inline:6px;color:var(--muted)}
+#calOffers{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:16px;z-index:65;display:flex;flex-direction:column;gap:8px;max-width:min(380px,calc(100% - 32px))}
+#calOffers .off{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow)}
+#calOffers .off a{flex:1;color:var(--ink);font-weight:600;text-decoration:none}
+/* Layout: a ledger rail on the right (RTL) with one colour per register, and a working column of forms + logs */
+:root{
+  --bg:#f2f5ef; --surface:#ffffff; --sunk:#e7ede3; --ink:#1c2a1d; --muted:#5b6a5c; --line:#d6dfd2;
+  --accent:#3a8a34; --accent-ink:#ffffff; --accent-soft:#e1f0d9; --brand-deep:#256b2a; --brand-lime:#8cc63f;
+  --c-manure:#8a6534; --c-cont:#c0571b; --c-meds:#6a4c9c; --c-tasks:#0e7c6b; --c-contracts:#3f5f7a; --c-proc:#2a6db0; --c-dead:#8c4a3c; --c-insp:#b0306a;
+  --good:#2e7d32; --good-soft:#e2f0e2; --warn:#9a6200; --warn-soft:#faeed3; --bad:#b3261e; --bad-soft:#f7e0dd;
+  --shadow:0 1px 2px rgba(20,40,40,.06),0 4px 16px rgba(20,40,40,.05);
+  --f-display:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111711; --surface:#192119; --sunk:#151c15; --ink:#e5ece3; --muted:#9aa898; --line:#2a352a;
+  --accent:#7cc46a; --accent-ink:#0d170c; --accent-soft:#213a1e; --brand-deep:#9bd486; --brand-lime:#a8d86a;
+  --c-manure:#c79a5e; --c-cont:#ea8a52; --c-meds:#a88ad9; --c-tasks:#40bfa8; --c-contracts:#86a8c6; --c-proc:#6fa8e6; --c-dead:#d08a7a; --c-insp:#e57aa8;
+  --good:#6cc070; --good-soft:#1c3320; --warn:#e3aa4c; --warn-soft:#3a2d12; --bad:#f2786d; --bad-soft:#3d1c19;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#111711; --surface:#192119; --sunk:#151c15; --ink:#e5ece3; --muted:#9aa898; --line:#2a352a;
+  --accent:#7cc46a; --accent-ink:#0d170c; --accent-soft:#213a1e; --brand-deep:#9bd486; --brand-lime:#a8d86a;
+  --c-manure:#c79a5e; --c-cont:#ea8a52; --c-meds:#a88ad9; --c-tasks:#40bfa8; --c-contracts:#86a8c6; --c-proc:#6fa8e6; --c-dead:#d08a7a; --c-insp:#e57aa8;
+  --good:#6cc070; --good-soft:#1c3320; --warn:#e3aa4c; --warn-soft:#3a2d12; --bad:#f2786d; --bad-soft:#3d1c19;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark }
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+*{box-sizing:border-box}
+#app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100%}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:1.6rem;font-weight:700}
+h2{font-size:1.15rem;font-weight:600}
+h3{font-size:1rem;font-weight:600}
+small,.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* rail */
+.rail{background:var(--surface);border-inline-start:1px solid var(--line);padding-block:20px;padding-inline:14px;display:flex;flex-direction:column;gap:20px;position:sticky;top:0;height:100vh;height:100dvh}
+.rail{border-top:4px solid var(--accent)}
+.brand{display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;padding-inline:6px}
+.brand-logo{width:132px;max-width:100%;aspect-ratio:357/286;background:#fff;border-radius:14px;padding:8px;display:block;object-fit:contain;box-shadow:var(--shadow)}
+.brand b{display:none}
+.brand small{font-size:.78rem}
+#tabs{display:flex;flex-direction:column;gap:2px}
+#tabs a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500;white-space:nowrap}
+#tabs a:hover{background:var(--sunk)}
+#tabs a.on{background:var(--accent-soft);color:var(--ink)}
+#tabs .cnt{margin-inline-start:auto;font-size:.75rem;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block;background:var(--muted)}
+.c-manure{background:var(--c-manure)}.c-cont{background:var(--c-cont)}.c-meds{background:var(--c-meds)}.c-tasks{background:var(--c-tasks)}.c-contracts{background:var(--c-contracts)}.c-proc{background:var(--c-proc)}.c-report{background:var(--ink)}.c-dead{background:var(--c-dead)}.c-insp{background:var(--c-insp)}.c-kit{background:var(--accent)}
+.thumb.sm{width:36px;height:36px;font-size:.65rem;border-radius:5px}
+.navsep{height:1px;background:var(--line);margin:6px 8px;flex:none}
+.qty{display:inline-flex;align-items:center;gap:4px}
+.qty b{min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+.kit-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.kit-head img{width:110px;background:#fff;border-radius:12px;padding:6px}
+.kit-sec h2{display:flex;align-items:center;gap:8px}
+.navlbl{font-size:.72rem;font-weight:600;color:var(--muted);padding:12px 10px 2px;letter-spacing:.02em}
+.searchbar{display:flex;align-items:center;gap:10px}
+.searchbar input{max-width:520px;background:var(--surface)}
+.modal{position:fixed;inset:0;background:rgba(10,20,10,.5);display:grid;place-items:center;z-index:55;padding:16px}
+.modal-box{width:min(640px,100%);max-height:90vh;overflow:auto}
+body.worker .rail{display:none}
+body.worker #app{grid-template-columns:minmax(0,1fr)}
+body.worker .searchbar{display:none}
+.worker-view input,.worker-view select{font-size:1.15rem;padding:12px}
+.worker-view .btn{font-size:1.05rem;padding:12px 18px}
+.worker-view h2{display:flex;align-items:center;gap:8px}
+.rowacts{display:flex;gap:2px;flex-wrap:nowrap}
+.auto{font-size:.75rem;color:var(--accent);font-weight:500}
+.stamp{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;padding:6px 10px;border-radius:8px;background:var(--accent-soft);color:var(--ink);align-self:end}
+#tabs .cnt.due{color:#fff;background:var(--bad);border-radius:99px;padding:0 7px;font-weight:600}
+.rem{display:flex;flex-direction:column;gap:8px}
+.rem-i{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.rem-i.over{border-color:color-mix(in srgb,var(--bad) 45%,var(--line));background:var(--bad-soft)}
+.rem-i.today{border-color:color-mix(in srgb,var(--warn) 45%,var(--line));background:var(--warn-soft)}
+.rem-i b{display:block}
+.rem-i small{display:block}
+.when{font-family:var(--f-display);font-weight:600;font-size:.85rem;text-align:center;min-width:64px;line-height:1.25}
+.when span{display:block;font-size:1.35rem;font-variant-numeric:tabular-nums}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.hist{font-size:.82rem;color:var(--muted);display:flex;flex-direction:column;gap:2px;max-height:120px;overflow:auto;border-top:1px dashed var(--line);padding-top:8px}
+.sync{margin-top:auto;font-size:.8rem;color:var(--muted);display:flex;gap:8px;align-items:center;padding-inline:6px}
+.sync .dot.good{background:var(--good)}.sync .dot.warn{background:var(--warn)}.sync .dot.bad{background:var(--bad)}
+
+main{padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+.wrap{max-width:1080px;margin-inline:auto;display:flex;flex-direction:column;gap:22px}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.head p{margin:4px 0 0;color:var(--muted)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);min-width:0}
+.card > h2,.card > .card-h{margin-bottom:12px}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.banner{border-radius:var(--r);padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.banner.warn{background:var(--warn-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent)}
+.banner.bad{background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
+
+/* forms */
+form.grid,.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:end}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
+label.f.wide{grid-column:1/-1}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0;width:100%}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 16px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--sunk)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.sm{padding:5px 10px;font-size:.85rem}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);background:var(--sunk)}
+.btn.danger{color:var(--bad)}
+.btn.armed{background:var(--bad);color:#fff;border-color:var(--bad)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* voice */
+.voice{border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));background:linear-gradient(180deg,var(--accent-soft),var(--surface) 70%)}
+.voice textarea{min-height:96px;background:var(--surface);font-size:1.02rem}
+.mic{width:52px;height:52px;border-radius:50%;border:none;background:var(--accent);color:var(--accent-ink);cursor:pointer;display:grid;place-items:center;flex:none}
+.mic svg{width:22px;height:22px}
+.mic.live{background:var(--bad);animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 50%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){.mic.live{animation:none}}
+.partial{color:var(--muted);font-style:italic;min-height:1.4em;font-size:.9rem}
+.example{font-size:.85rem;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:8px 12px}
+.preview{display:flex;flex-direction:column;gap:10px}
+.pitem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.pitem .fgrid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.pitem .fgrid input,.pitem .fgrid select{padding:6px 8px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--sunk);white-space:nowrap}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi .lbl{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:7px}
+.kpi .val{font-family:var(--f-display);font-size:1.75rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.25}
+.kpi .sub{font-size:.8rem;color:var(--muted)}
+.kpi.alert{border-color:color-mix(in srgb,var(--warn) 50%,var(--line));background:var(--warn-soft)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{padding:9px 12px;text-align:start;border-bottom:1px solid var(--line);white-space:nowrap}
+td.wrap{white-space:normal;min-width:160px}
+th{font-weight:600;font-size:.8rem;color:var(--muted);background:var(--sunk)}
+tbody tr:last-child td{border-bottom:none}
+tfoot td{font-weight:600;background:var(--sunk);border-top:1px solid var(--line);border-bottom:none}
+td.n,th.n{text-align:end;font-variant-numeric:tabular-nums}
+.d2{display:block;font-size:.75rem;color:var(--muted)}
+.empty{padding:26px 16px;text-align:center;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.mute{background:var(--sunk);color:var(--muted)}
+.ex{font-size:.7rem;color:var(--warn);font-weight:600;margin-inline-start:6px}
+
+/* timeline */
+.tl{display:flex;flex-direction:column}
+.tl-i{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line)}
+.tl-i:last-child{border-bottom:none}
+.tl-i .t{font-size:.82rem;color:var(--muted);white-space:nowrap}
+
+/* weeks */
+.weeks{display:grid;grid-template-columns:minmax(120px,1.2fr) 1fr 1fr;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.weeks > div{padding:9px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;min-width:0}
+.weeks .wh{background:var(--sunk);font-size:.8rem;font-weight:600;color:var(--muted)}
+.weeks .cur{background:var(--accent-soft)}
+
+/* contracts */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ccard dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:0;font-size:.88rem}
+.ccard dt{color:var(--muted)}.ccard dd{margin:0;overflow-wrap:anywhere}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.thumb{width:64px;height:64px;border-radius:6px;border:1px solid var(--line);background:var(--sunk);object-fit:cover;cursor:zoom-in;display:grid;place-items:center;font-size:.75rem;font-weight:600;color:var(--muted);text-decoration:none}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.82);display:grid;place-items:center;z-index:50;padding:24px;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:90vh;border-radius:6px;background:#fff}
+
+/* chart */
+.chart svg{width:100%;height:auto;display:block}
+.chart .bar{fill:var(--c-manure)}
+.chart .bar2{fill:var(--c-cont)}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+.chart .vl{fill:var(--ink);font-weight:600}
+.chart line{stroke:var(--line)}
+.legend{display:flex;gap:16px;font-size:.82rem;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:8px;z-index:60;font-weight:500;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.toast.bad{background:var(--bad);color:#fff}
+details.settings summary{cursor:pointer;font-weight:600;font-family:var(--f-display)}
+details.settings[open] summary{margin-bottom:12px}
+
+@media (max-width:860px){
+  #app{grid-template-columns:minmax(0,1fr)}
+  .rail{position:sticky;top:env(safe-area-inset-top,0px);height:auto;z-index:20;flex-direction:column;gap:10px;padding-block:10px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));border-inline-start:none;border-bottom:1px solid var(--line)}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--surface)}
+  .brand{flex-direction:row;text-align:start}
+  .brand-logo{width:60px;padding:3px;border-radius:8px}
+  #tabs{flex-direction:row;overflow-x:auto;scrollbar-width:none}
+  #tabs a{padding:7px 10px}
+  #tabs .cnt{display:none}
+  .navlbl{display:none}
+  .sync{display:none}
+  main{padding-block:20px 60px}
+  h1{font-size:1.35rem}
+  .pitem{grid-template-columns:minmax(0,1fr) auto}
+  .pitem > .tag{grid-column:1/-1;justify-self:start}
+}
+</style>
+</head>
+<body>
+
+<div id="auth" hidden>
+  <div class="box card">
+    <img src="logo.png" alt="حمام البستان">
+    <h1>سجل المتابعة البيئية لشركة حمام البستان</h1>
+    <p class="muted" id="authMsg" style="margin:0">سجّل دخولك عشان تفتح السجل.</p>
+    <div id="authForms">
+      <button class="btn pri" type="button" id="gSignIn" style="width:100%;padding:12px">الدخول بحساب Google</button>
+      <div class="sep">أو بالبريد وكلمة المرور</div>
+      <form id="fLogin">
+        <label class="f" id="nameRow" hidden>الاسم<input id="au_name" autocomplete="name"></label>
+        <label class="f">البريد الإلكتروني<input type="email" id="au_email" required autocomplete="email"></label>
+        <label class="f">كلمة المرور<input type="password" id="au_pass" required minlength="6" autocomplete="current-password"></label>
+        <button class="btn pri" type="submit" id="au_go">دخول</button>
+        <div class="row" style="justify-content:space-between"><button class="btn ghost sm" type="button" id="au_toggle">ما عندك حساب؟ أنشئ حساب</button><button class="btn ghost sm" type="button" id="au_reset">نسيت كلمة المرور</button></div>
+      </form>
+    </div>
+    <div class="err" id="authErr" role="alert"></div>
+    <button class="btn" type="button" id="authOut" hidden>تسجيل خروج</button>
+  </div>
+</div>
+<div id="calOffers"></div>
+
+<div id="app" dir="rtl" lang="ar">
+  <aside class="rail">
+    <div class="brand"><img class="brand-logo" src="logo.png" alt="حمام البستان"><div><b id="farmName">حمام البستان</b><small>سجل المتابعة البيئية لشركة حمام البستان</small></div></div>
+    <nav id="tabs">
+      <a href="#home" data-v="home"><i class="dot c-report"></i>الرئيسية</a>
+      <a href="#worker" data-v="worker"><i class="dot c-kit"></i>وضع العامل</a>
+      <div class="navlbl">يومي</div>
+      <a href="#manure" data-v="manure"><i class="dot c-manure"></i>السبلة<span class="cnt num" data-cnt="manure"></span></a>
+      <a href="#containers" data-v="containers"><i class="dot c-cont"></i>العبوات الخطرة<span class="cnt num" data-cnt="containers"></span></a>
+      <a href="#meds" data-v="meds"><i class="dot c-meds"></i>الأدوية والمخزون<span class="cnt num" data-cnt="meds"></span></a>
+      <a href="#mortality" data-v="mortality"><i class="dot c-dead"></i>النافق والعنابر<span class="cnt num" data-cnt="mortality"></span></a>
+      <a href="#tasks" data-v="tasks"><i class="dot c-tasks"></i>نظافة المزرعة<span class="cnt num" data-cnt="tasks"></span></a>
+      <div class="navlbl">بيئي</div>
+      <a href="#procedures" data-v="procedures"><i class="dot c-proc"></i>الإجراءات البيئية<span class="cnt num" data-cnt="procedures"></span></a>
+      <a href="#inspections" data-v="inspections"><i class="dot c-insp"></i>ملاحظات التفتيش<span class="cnt num" data-cnt="inspections"></span></a>
+      <div class="navlbl">الوثائق</div>
+      <a href="#contracts" data-v="contracts"><i class="dot c-contracts"></i>العقود والتراخيص<span class="cnt num" data-cnt="contracts"></span></a>
+      <div class="navlbl">التقارير</div>
+      <a href="#kit" data-v="kit"><i class="dot c-report"></i>التقارير وملف التفتيش</a>
+    </nav>
+    <div class="sync" id="sync"><i class="dot warn"></i><span>جارِ تحميل البيانات…</span></div>
+    <div class="who" id="who" hidden><span id="whoName"></span><button class="btn sm ghost" type="button" id="signOut">خروج</button></div>
+  </aside>
+
+  <main>
+    <div class="wrap">
+      <div id="noDb" class="banner bad" hidden><span>الحفظ غير متاح. تأكد إن ملف firebase-config.js معبّى، وإنك مسجّل دخول، وإن بريدك مضاف في قواعد Firestore.</span></div>
+      <div class="searchbar" id="searchbar"><input type="search" id="q" placeholder="ابحث في هذا القسم: عنبر ٣، أموكسيسيلين، اسم شركة، تاريخ…" aria-label="بحث في السجلات"><small id="qInfo"></small></div>
+
+      <!-- WORKER -->
+      <section data-view="worker" class="wrap worker-view" hidden>
+        <div class="card kit-head"><img src="logo.png" alt="حمام البستان"><div style="flex:1;min-width:0"><h1>تسجيل سريع</h1><p class="muted" id="wDate" style="margin:4px 0 0"></p></div><a class="btn" href="#home">الصفحة الكاملة</a></div>
+        <div class="card">
+          <h2><i class="dot c-tasks"></i> نظافة اليوم</h2>
+          <div class="row" id="quickClean2" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <h2><i class="dot c-manure"></i> إخراج سبلة</h2>
+          <form class="grid" id="fWManure" style="margin-top:10px">
+            <label class="f">عدد الأكياس<input type="number" id="w_bags" min="1" required inputmode="numeric"></label>
+            <label class="f">العنبر<input id="w_barn" list="barnNames"></label>
+            <label class="f">الحركة<select id="w_dir"><option value="to_store">إلى المستودع</option><option value="out">خارج المزرعة</option></select></label>
+            <button class="btn pri" type="submit">حفظ السبلة</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2><i class="dot c-dead"></i> نافق</h2>
+          <form class="grid" id="fWDead" style="margin-top:10px">
+            <label class="f">العدد<input type="number" id="w_dead" min="1" required inputmode="numeric"></label>
+            <label class="f">العنبر<input id="w_dbarn" list="barnNames"></label>
+            <label class="f">التخلص<select id="w_method"><option>حرق</option><option>دفن صحي</option><option>تسليم لجهة مرخصة</option></select></label>
+            <button class="btn pri" type="submit">حفظ النافق</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2><i class="dot c-cont"></i> عبوات خطرة</h2>
+          <form class="grid" id="fWCont" style="margin-top:10px">
+            <label class="f">العدد<input type="number" id="w_cont" min="1" required inputmode="numeric"></label>
+            <button class="btn pri" type="submit">حفظ العبوات</button>
+          </form>
+        </div>
+        <a class="btn" href="#home" style="padding:14px">🎤 التسجيل بالصوت</a>
+        <div class="card"><h2>آخر ما سجّلته اليوم</h2><div class="tl" id="wToday"></div></div>
+      </section>
+      <datalist id="barnNames"></datalist>
+      <div class="modal" id="editModal" hidden>
+        <div class="modal-box card" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+          <div class="card-h"><h2 id="editTitle">تعديل</h2><button class="btn ghost sm" type="button" id="editClose">إغلاق</button></div>
+          <form class="grid" id="fEdit"></form>
+        </div>
+      </div>
+
+      <!-- HOME -->
+      <section data-view="home" class="wrap">
+        <div class="head">
+          <div><h1 id="todayTitle">اليوم</h1><p id="todaySub"></p></div>
+        </div>
+
+        <div id="exBanner" class="banner warn" hidden>
+          <span>بعض السجلات المعروضة <b>أمثلة تجريبية</b> لتوضيح طريقة العمل. امسحها قبل ما تبدأ التسجيل الفعلي.</span>
+          <button class="btn sm danger" id="clearEx" type="button">امسح الأمثلة</button>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>التذكيرات</h2><a class="btn sm ghost" href="#procedures">كل الإجراءات</a></div>
+          <div class="rem" id="homeRem"></div>
+        </div>
+
+        <div class="card voice">
+          <div class="card-h"><h2>سجّل بصوتك</h2><small>تكلّم بجملة وحدة، والصفحة توزّعها على الأقسام</small></div>
+          <div class="row" style="align-items:flex-start;flex-wrap:nowrap;gap:12px">
+            <button class="mic" id="micBtn" type="button" aria-label="تشغيل الميكروفون" title="تشغيل الميكروفون">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </button>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+              <textarea id="vcText" placeholder="مثال: اليوم طلعنا سبلة من عنبر ٢ عشرين كيس للمستودع، وطلعنا ٦ عبوات خطرة، وصرفنا دواء أموكسيسيلين، ورجعنا عبوة الفيتامين الفاضية أمس، وسوّينا نظافة السقايات."></textarea>
+              <div class="partial" id="vcPartial"></div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;justify-content:space-between">
+            <div class="row">
+              <button class="btn pri" id="vcGo" type="button">وزّع على الأقسام</button>
+              <button class="btn ghost" id="vcClear" type="button">مسح النص</button>
+            </div>
+            <small id="vcStatus"></small>
+          </div>
+          <div id="vcPreviewWrap" hidden style="margin-top:16px">
+            <div class="card-h" style="margin-bottom:10px"><h3>راجع قبل الحفظ</h3><div class="row"><button class="btn ghost sm" id="vcCancel" type="button">إلغاء</button><button class="btn pri" id="vcSave" type="button">حفظ الكل</button></div></div>
+            <div class="preview" id="vcPreview"></div>
+            <div id="vcUnclear" class="example" hidden style="margin-top:10px"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-h" style="margin-bottom:10px"><h2>هذا الشهر</h2><small id="monthLbl"></small></div>
+          <div class="kpis" id="homeKpis"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>آخر الحركات</h2><a class="btn sm ghost" href="#kit">كل التقارير</a></div>
+          <div class="tl" id="homeTl"></div>
+        </div>
+
+        <details class="card settings" id="settingsBox">
+          <summary>بيانات المزرعة (تظهر في رأس التقرير)</summary>
+          <form class="grid" id="fSettings">
+            <label class="f">اسم المزرعة<input id="s_name" name="name" placeholder="مزرعة الحمام"></label>
+            <label class="f">اسم المالك / المسؤول<input id="s_owner" name="owner"></label>
+            <label class="f">رقم السجل أو الترخيص<input id="s_permit" name="permit"></label>
+            <label class="f">الموقع<input id="s_loc" name="location" placeholder="المدينة، الحي"></label>
+            <button class="btn pri" type="submit">حفظ البيانات</button>
+          </form>
+        </details>
+
+        <div class="card" id="backupCard">
+          <div class="card-h"><h2>النسخة الاحتياطية</h2><small id="backupInfo"></small></div>
+          <p class="muted" style="margin:0 0 12px">ملف واحد فيه كل السجلات والصور المحفوظة في الصفحة. احفظه في جهازك أو في Google Drive.</p>
+          <div class="row">
+            <button class="btn pri" type="button" id="bkDl">تنزيل نسخة احتياطية</button>
+            <button class="btn" type="button" id="bkRestoreBtn">استرجاع من نسخة</button>
+            <button class="btn calOnly" type="button" id="bkCal" hidden>تذكير شهري في التقويم</button>
+            <input type="file" id="bkFile" accept="application/json,.json" hidden>
+          </div>
+          <small id="bkMsg" style="display:block;margin-top:8px"></small>
+        </div>
+      </section>
+
+      <!-- PROCEDURES -->
+      <section data-view="procedures" class="wrap" hidden>
+        <div class="head"><div><h1>الإجراءات البيئية</h1><p>مواعيد إخراج السبلة، واستلام النفايات والأدوية الخطرة، والتجديدات والزيارات. المتكرر منها يتجدد تلقائيًا بعد التنفيذ.</p></div></div>
+        <div class="card">
+          <h2>إضافة إجراء أو موعد</h2>
+          <form class="grid" id="fProc">
+            <label class="f">الإجراء<input id="p_title" name="title" required placeholder="مثلاً: استلام النفايات الخطرة"></label>
+            <label class="f">التصنيف<select id="p_cat" name="category"></select></label>
+            <label class="f">الموعد<input type="date" id="p_due" name="dueDate" required></label>
+            <label class="f">التكرار<select id="p_rep" name="repeat"><option value="none">مرة وحدة</option><option value="weekly">كل أسبوع</option><option value="biweekly">كل أسبوعين</option><option value="monthly">كل شهر</option><option value="quarterly">كل ٣ شهور</option><option value="yearly">كل سنة</option></select></label>
+            <label class="f">الجهة المنفذة<input id="p_party" name="party" placeholder="اختياري: اسم الشركة"></label>
+            <label class="f">ذكّرني قبل<select id="p_rem" name="remindDays"><option value="1">يوم</option><option value="3" selected>٣ أيام</option><option value="7">أسبوع</option><option value="14">أسبوعين</option><option value="30">شهر</option></select></label>
+            <label class="f wide">ملاحظة<input id="p_note" name="note" placeholder="اختياري: رقم التواصل، المطلوب تجهيزه"></label>
+            <label class="f calOnly" hidden style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)"><input type="checkbox" id="p_cal" checked style="width:auto">أضفه لتقويم Google</label>
+            <button class="btn pri" type="submit">إضافة</button>
+          </form>
+        </div>
+        <div class="kpis" id="procKpis"></div>
+        <div class="card"><div class="card-h"><h2>المواعيد القادمة</h2><div class="row"><small id="calMsg"></small><button class="btn sm calOnly" id="calAll" type="button" hidden>أضف كل المواعيد لتقويم Google</button></div></div><div class="pgrid" id="procList"></div></div>
+        <div class="card" id="procDoneWrap"><h2>إجراءات منتهية (غير متكررة)</h2><div id="procDone"></div></div>
+      </section>
+
+      <!-- MANURE -->
+      <section data-view="manure" class="wrap" hidden>
+        <div class="head"><div><h1>السبلة</h1><p>إخراج السبلة من العنابر إلى المستودع، وخروجها من المستودع.</p></div></div>
+        <div class="card">
+          <h2>تسجيل إخراج</h2>
+          <form class="grid" id="fManure">
+            <label class="f">التاريخ<input type="date" id="m_date" name="date" required></label>
+            <label class="f">عدد الأكياس<input type="number" id="m_bags" name="bags" min="1" required inputmode="numeric"></label>
+            <label class="f">العنبر<input id="m_barn" name="barn" list="barnNames" placeholder="مثلاً: عنبر ٣"></label>
+            <label class="f">الحركة<select id="m_dir" name="direction"><option value="to_store">من العنابر إلى المستودع</option><option value="out">من المستودع إلى خارج المزرعة</option></select></label>
+            <label class="f wide">ملاحظة<input id="m_note" name="note" placeholder="اختياري: اسم الناقل، رقم اللوحة، الجهة المستلمة"></label>
+            <label class="f">صورة السند (للخروج من المزرعة)<input type="file" id="m_files" class="rcptIn" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></label>
+            <button class="btn pri" type="submit">حفظ</button>
+          </form>
+        </div>
+        <div class="kpis" id="manureKpis"></div>
+        <div class="card"><h2>السجل</h2><div id="manureTbl"></div></div>
+      </section>
+
+      <!-- CONTAINERS -->
+      <section data-view="containers" class="wrap" hidden>
+        <div class="head"><div><h1>العبوات الخطرة</h1><p>عدد العبوات المُخرجة وتاريخ الإخراج.</p></div></div>
+        <div class="card">
+          <h2>تسجيل إخراج</h2>
+          <form class="grid" id="fCont">
+            <label class="f">التاريخ<input type="date" id="c_date" name="date" required></label>
+            <label class="f">العدد<input type="number" id="c_count" name="count" min="1" required inputmode="numeric"></label>
+            <label class="f">النوع<input id="c_kind" name="kind" placeholder="اختياري: مطهرات، مبيدات…"></label>
+            <label class="f">ملاحظة<input id="c_note" name="note" placeholder="اختياري: الجهة المستلمة"></label>
+            <label class="f">صورة سند الاستلام<input type="file" id="c_files" class="rcptIn" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></label>
+            <button class="btn pri" type="submit">حفظ</button>
+          </form>
+        </div>
+        <div class="kpis" id="contKpis"></div>
+        <div class="card"><h2>السجل</h2><div id="contTbl"></div></div>
+      </section>
+
+      <!-- MEDS -->
+      <section data-view="meds" class="wrap" hidden>
+        <div class="head"><div><h1>الأدوية</h1><p>اسم الدواء، تاريخ الإخراج، ومتى رجعت العبوة الفارغة.</p></div></div>
+        <div class="card">
+          <h2>تسجيل إخراج دواء</h2>
+          <form class="grid" id="fMed">
+            <label class="f">اسم الدواء<input id="d_name" name="name" required list="medNames"></label>
+            <label class="f">تاريخ الإخراج<input type="date" id="d_out" name="outDate" required></label>
+            <label class="f">الكمية<input id="d_qty" name="qty" placeholder="اختياري: ٢ عبوة، ١ لتر"></label>
+            <label class="f">ملاحظة<input id="d_note" name="note" placeholder="اختياري"></label>
+            <button class="btn pri" type="submit">حفظ</button>
+          </form>
+          <datalist id="medNames"></datalist>
+        </div>
+        <div class="kpis" id="medKpis"></div>
+        <div class="card"><div class="card-h"><h2>عبوات لم ترجع بعد</h2></div><div id="medOpen"></div></div>
+        <div class="card"><h2>السجل الكامل</h2><div id="medTbl"></div></div>
+        <div class="card">
+          <div class="card-h"><h2>المخزون: أدوية ومطهرات ومبيدات</h2><small id="stockMsg"></small></div>
+          <form class="grid" id="fStock">
+            <label class="f">الصنف<input id="s2_name" required list="medNames"></label>
+            <label class="f">النوع<select id="s2_kind"><option>دواء</option><option>مطهر</option><option>مبيد</option><option>فيتامين أو مكمل</option><option>أخرى</option></select></label>
+            <label class="f">الكمية<input type="number" id="s2_qty" min="0" step="any" required inputmode="decimal"></label>
+            <label class="f">الوحدة<input id="s2_unit" placeholder="عبوة، لتر، كيس"></label>
+            <label class="f">تاريخ الانتهاء<input type="date" id="s2_exp"></label>
+            <label class="f">ملاحظة<input id="s2_note" placeholder="اختياري: رقم التشغيلة"></label>
+            <button class="btn pri" type="submit">إضافة للمخزون</button>
+          </form>
+          <div id="stockTbl" style="margin-top:14px"></div>
+        </div>
+      </section>
+
+      <!-- MORTALITY -->
+      <section data-view="mortality" class="wrap" hidden>
+        <div class="head"><div><h1>النافق</h1><p>عدد الطيور النافقة، العنبر، وطريقة التخلص منها.</p></div></div>
+        <div class="card">
+          <h2>تسجيل نافق</h2>
+          <form class="grid" id="fDead">
+            <label class="f">التاريخ<input type="date" id="x_date" required></label>
+            <label class="f">العدد<input type="number" id="x_count" min="1" required inputmode="numeric"></label>
+            <label class="f">العنبر<input id="x_barn" list="barnNames" placeholder="مثلاً: عنبر ٣"></label>
+            <label class="f">طريقة التخلص<select id="x_method"><option>حرق</option><option>دفن صحي</option><option>تسليم لجهة مرخصة</option></select></label>
+            <label class="f">السبب المحتمل<input id="x_cause" placeholder="اختياري"></label>
+            <label class="f">ملاحظة<input id="x_note" placeholder="اختياري"></label>
+            <label class="f">صورة السند (عند التسليم)<input type="file" id="x_files" class="rcptIn" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></label>
+            <button class="btn pri" type="submit">حفظ</button>
+          </form>
+        </div>
+        <div class="kpis" id="deadKpis"></div>
+        <div class="card">
+          <div class="card-h"><h2>العنابر وعدد الطيور</h2><small>عشان تنحسب نسبة النافق لكل عنبر</small></div>
+          <form class="grid" id="fBarn">
+            <label class="f">اسم العنبر<input id="b_name" required placeholder="مثلاً: عنبر ١"></label>
+            <label class="f">عدد الطيور الحالي<input type="number" id="b_birds" min="0" required inputmode="numeric"></label>
+            <button class="btn pri" type="submit">إضافة عنبر</button>
+          </form>
+          <div id="barnTbl" style="margin-top:14px"></div>
+        </div>
+        <div class="card"><h2>السجل</h2><div id="deadTbl"></div></div>
+      </section>
+
+      <!-- INSPECTIONS -->
+      <section data-view="inspections" class="wrap" hidden>
+        <div class="head"><div><h1>ملاحظات التفتيش</h1><p>كل ملاحظة يطلبها المفتش، ومهلة تصحيحها، ومتى انحلّت مع صورة بعد التصحيح.</p></div></div>
+        <div class="card">
+          <h2>تسجيل ملاحظة</h2>
+          <form class="grid" id="fInsp">
+            <label class="f">تاريخ الزيارة<input type="date" id="i_date" required></label>
+            <label class="f">الجهة<input id="i_auth" value="المركز الوطني للرقابة على الالتزام البيئي"></label>
+            <label class="f wide">الملاحظة المطلوب تصحيحها<input id="i_note" required placeholder="مثلاً: تخزين العبوات الفارغة بعيد عن مصدر الماء"></label>
+            <label class="f">مهلة التصحيح<input type="date" id="i_due"></label>
+            <label class="f">صورة قبل التصحيح<input type="file" id="i_files" class="rcptIn" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></label>
+            <label class="f calOnly" hidden style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)"><input type="checkbox" id="i_cal" checked style="width:auto">أضف المهلة لتقويم Google</label>
+            <button class="btn pri" type="submit" id="iSubmit">حفظ</button>
+          </form>
+        </div>
+        <div class="kpis" id="inspKpis"></div>
+        <div class="card"><h2>ملاحظات مفتوحة</h2><div class="pgrid" id="inspOpen"></div></div>
+        <div class="card" id="inspDoneWrap"><h2>ملاحظات انحلّت</h2><div id="inspDone"></div></div>
+      </section>
+
+      <!-- KIT -->
+      <section data-view="kit" class="wrap" hidden>
+        <div class="card kit-head"><img src="logo.png" alt="حمام البستان"><div style="flex:1;min-width:0"><h1 id="kitName">حمام البستان</h1><p class="muted" id="kitMeta" style="margin:4px 0 0"></p></div>
+          <div class="row"><label class="f" style="min-width:150px">الفترة<select id="kitPeriod"><option value="30">آخر ٣٠ يوم</option><option value="90" selected>آخر ٩٠ يوم</option><option value="180">آخر ٦ شهور</option><option value="365">آخر سنة</option><option value="month">هذا الشهر</option><option value="last">الشهر الماضي</option><option value="all">كل السجلات</option><option value="custom">فترة مخصصة</option></select></label>
+            <label class="f kitCustom" hidden>من<input type="date" id="kf"></label><label class="f kitCustom" hidden>إلى<input type="date" id="kt"></label>
+            <button class="btn" id="kitCsv" type="button" style="align-self:flex-end">Excel (CSV)</button><button class="btn pri" id="kitDl" type="button" style="align-self:flex-end">تنزيل التقرير للطباعة</button></div></div>
+        <small id="kitPeriodLbl"></small>
+        <div class="kpis" id="kitKpis"></div>
+        <div class="card chart"><div class="card-h"><h2>الإخراج حسب الشهر</h2><div class="legend"><span><i class="dot c-manure"></i>أكياس السبلة</span><span><i class="dot c-cont"></i>العبوات الخطرة</span></div></div><div id="kitChart"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-contracts"></i>التراخيص والعقود ومرفقاتها</h2><div class="cgrid" id="kitDocs"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-insp"></i>ملاحظات التفتيش</h2><div id="kitInsp"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-proc"></i>الإجراءات البيئية: المنفذة والقادمة</h2><div id="kitProcDone"></div><div class="rem" id="kitProc" style="margin-top:12px"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-manure"></i>السبلة</h2><div id="kitManure"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-cont"></i>العبوات الخطرة</h2><div id="kitCont"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-meds"></i>الأدوية وعبواتها الفارغة</h2><div id="kitMeds"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-meds"></i>المخزون وصلاحيته</h2><div id="kitStock"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-dead"></i>النافق</h2><div id="kitDead"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-tasks"></i>نظافة المزرعة</h2><div id="kitWeeks"></div><div id="kitClean" style="margin-top:12px"></div></div>
+        <div class="card kit-sec"><h2><i class="dot c-cont"></i>حركات بدون سند</h2><div id="kitRcpt"></div></div>
+      </section>
+
+      <!-- TASKS -->
+      <section data-view="tasks" class="wrap" hidden>
+        <div class="head"><div><h1>نظافة المزرعة</h1><p>الدفتر الأسبوعي للنظافة: نظافة المزرعة والعنابر، والسقايات، والمستودع، والتعقيم. الأسبوع يبدأ يوم الأحد.</p></div></div>
+        <div class="card">
+          <div class="card-h"><h2>سجّل نظافة اليوم بضغطة</h2><small>يتسجّل بتاريخ اليوم</small></div>
+          <div class="row" id="quickClean"></div>
+        </div>
+        <div class="card">
+          <h2>تسجيل نظافة بتفاصيل</h2>
+          <form class="grid" id="fTask">
+            <label class="f">نوع النظافة<select id="t_task" name="task"></select></label>
+            <label class="f">التاريخ<input type="date" id="t_date" name="date" required></label>
+            <label class="f">نفّذها<input id="t_by" name="by" placeholder="اختياري: اسم العامل"></label>
+            <label class="f">ملاحظة<input id="t_note" name="note" placeholder="اختياري: المطهر المستخدم"></label>
+            <label class="f">صور النظافة<input type="file" id="t_files" multiple accept="image/png,image/jpeg,image/webp"></label>
+            <button class="btn pri" type="submit">حفظ</button>
+          </form>
+        </div>
+        <div class="kpis" id="cleanKpis"></div>
+        <div class="card"><div class="card-h"><h2>الدفتر الأسبوعي: آخر ١٠ أسابيع</h2><small id="weeksScore"></small></div><div id="weeksGrid"></div></div>
+        <div class="card"><h2>سجل النظافة</h2><div id="taskTbl"></div></div>
+      </section>
+
+      <!-- CONTRACTS -->
+      <section data-view="contracts" class="wrap" hidden>
+        <div class="head"><div><h1>العقود والتراخيص</h1><p>العقود، والتصاريح، والتراخيص، والشهادات، مع صورها وتواريخ انتهائها وتذكير قبل الانتهاء.</p></div><button class="btn sm calOnly" id="docCalAll" type="button" hidden>أضف كل تواريخ الانتهاء للتقويم</button></div>
+        <div class="card">
+          <h2>إضافة عقد أو ترخيص</h2>
+          <form class="grid" id="fContract">
+            <label class="f">العنوان<input id="k_title" name="title" required placeholder="مثلاً: التصريح البيئي، عقد نقل مخلفات"></label>
+            <label class="f">الجهة المصدرة أو الطرف الثاني<input id="k_party" name="party" placeholder="اسم الشركة أو الجهة"></label>
+            <label class="f">النوع<select id="k_type" name="type"><optgroup label="تراخيص وشهادات"><option>تصريح بيئي</option><option>ترخيص بلدي</option><option>سجل تجاري</option><option>شهادة دفاع مدني</option><option>شهادة صحية لعامل</option></optgroup><optgroup label="عقود"><option>التزام بيئي</option><option>نقل مخلفات</option><option>إتلاف مخلفات خطرة</option><option>مكافحة حشرات وقوارض</option><option>نظافة</option><option>بيطري</option><option>توريد أعلاف</option></optgroup><option>أخرى</option></select></label>
+            <label class="f">الرقم<input id="k_no" name="number"></label>
+            <label class="f">تاريخ البداية<input type="date" id="k_start" name="startDate"></label>
+            <label class="f">تاريخ الانتهاء<input type="date" id="k_end" name="endDate"></label>
+            <label class="f wide">الصور أو ملف PDF<input type="file" id="k_files" multiple accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"></label>
+            <label class="f wide">ملاحظة<input id="k_note" name="note"></label>
+            <label class="f calOnly" hidden style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)"><input type="checkbox" id="k_cal" checked style="width:auto">ذكّرني بالانتهاء في تقويم Google</label>
+            <button class="btn pri" type="submit" id="kSubmit">حفظ</button>
+          </form>
+          <small id="assetNote" hidden>رفع الملفات متاح لصاحب الصفحة والمحررين فقط.</small>
+        </div>
+        <div class="cgrid" id="contractList"></div>
+      </section>
+
+      <!-- REPORTS -->
+      <section data-view="reports" class="wrap" hidden>
+        <div class="head"><div><h1>التقارير</h1><p>ملخص جاهز للعرض على المركز الوطني للرقابة على الالتزام البيئي.</p></div>
+          <div class="row"><button class="btn" id="dlCsv" type="button">تنزيل Excel (CSV)</button><button class="btn pri" id="dlHtml" type="button">تنزيل التقرير للطباعة</button></div>
+        </div>
+        <div class="card">
+          <div class="fgrid">
+            <label class="f">الفترة<select id="r_range"><option value="month">هذا الشهر</option><option value="last">الشهر الماضي</option><option value="q">آخر ٣ شهور</option><option value="year">هذه السنة</option><option value="all">كل السجلات</option><option value="custom">فترة مخصصة</option></select></label>
+            <label class="f">من<input type="date" id="r_from"></label>
+            <label class="f">إلى<input type="date" id="r_to"></label>
+          </div>
+          <small id="rPeriod" style="display:block;margin-top:10px"></small>
+        </div>
+        <div class="kpis" id="repKpis"></div>
+        <div class="card chart"><div class="card-h"><h2>الإخراج حسب الشهر</h2><div class="legend"><span><i class="dot c-manure"></i>أكياس السبلة</span><span><i class="dot c-cont"></i>العبوات الخطرة</span></div></div><div id="repChart"></div></div>
+        <div class="card"><h2>السبلة</h2><div id="repManure"></div></div>
+        <div class="card"><h2>العبوات الخطرة</h2><div id="repCont"></div></div>
+        <div class="card"><h2>الأدوية</h2><div id="repMeds"></div></div>
+        <div class="card"><h2>الإجراءات البيئية المنفذة</h2><div id="repProc"></div></div>
+        <div class="card"><h2>النافق</h2><div id="repDead"></div></div>
+        <div class="card"><h2>ملاحظات التفتيش</h2><div id="repInsp"></div></div>
+        <div class="card"><h2>نظافة المزرعة (الدفتر الأسبوعي)</h2><div id="repTasks"></div></div>
+        <div class="card"><h2>العقود والتراخيص</h2><div id="repContracts"></div></div>
+        <input type="file" id="attachInput" multiple accept="image/png,image/jpeg,image/webp,application/pdf" hidden>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+/* Bridge: gives the app the same claude.use(name) surface it had on claude.ai,
+   backed by Firebase (data + sign-in) and the browser (microphone, downloads, calendar links). */
+(() => {
+  const $ = s => document.querySelector(s);
+  let ready; const whenReady = new Promise(r => { ready = r; });
+  const caps = {};
+  window.claude = { use: name => whenReady.then(() => caps[name] ?? null) };
+
+  caps.downloads = { save: async ({filename, data}) => {
+    const type = /\.json$/.test(filename) ? 'application/json' : /\.csv$/.test(filename) ? 'text/csv;charset=utf-8' : /\.html$/.test(filename) ? 'text/html;charset=utf-8' : 'application/octet-stream';
+    const b = data instanceof Blob ? data : new Blob([data], {type});
+    const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = filename; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 5000); return {status: 'saved'};
+  } };
+
+  /* microphone: the browser's own speech recognition (Chrome, Edge, Safari) */
+  caps.dictation = (() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return null;
+    let rec = null, state = 'idle'; const hs = {p: [], f: [], s: []};
+    const emit = (k, v) => hs[k].forEach(h => { try { h(v); } catch {} });
+    const set = (st, reason) => { state = st; emit('s', reason ? {state: st, reason} : {state: st}); };
+    return {
+      start() { return new Promise((res, rej) => {
+        try {
+          rec = new SR(); rec.lang = 'ar-SA'; rec.continuous = true; rec.interimResults = true;
+          rec.onstart = () => { set('listening'); res(); };
+          rec.onresult = e => { let interim = ''; for (let i = e.resultIndex; i < e.results.length; i++) { const r = e.results[i]; if (r.isFinal) emit('f', {text: ' ' + r[0].transcript.trim() + '،'}); else interim += r[0].transcript; } emit('p', {text: interim}); };
+          rec.onerror = e => { const c = ({'not-allowed': 'not_granted', 'service-not-allowed': 'not_granted', 'audio-capture': 'not_granted', 'no-speech': 'stopped', 'aborted': 'stopped', 'network': 'upstream_error'})[e.error] || 'upstream_error'; if (state === 'starting') rej({code: c}); set('idle', c); };
+          rec.onend = () => { emit('p', {text: ''}); if (state !== 'idle') set('idle', 'stopped'); };
+          set('starting'); rec.start();
+        } catch { rej({code: 'unavailable'}); }
+      }); },
+      stop() { return new Promise(r => { if (!rec || state === 'idle') return r(); set('finishing'); const prev = rec.onend; rec.onend = () => { prev && prev(); r(); }; try { rec.stop(); } catch { r(); } }); },
+      active() { return state !== 'idle'; },
+      onPartial(h) { hs.p.push(h); return () => {}; }, onFinal(h) { hs.f.push(h); return () => {}; }, onState(h) { hs.s.push(h); return () => {}; },
+    };
+  })();
+
+  /* Google Calendar: a ready-filled "add to calendar" link the person taps (no Google setup needed) */
+  caps.mcp = { callTool: async (server, tool, input) => {
+    if ((tool === 'create_event' || tool === 'update_event') && input && input.startTime) {
+      const ds = s => String(s).slice(0, 10).replace(/-/g, '');
+      const p = new URLSearchParams({action: 'TEMPLATE', text: (input.summary || 'موعد').replace(/^✓\s*/, ''), dates: ds(input.startTime) + '/' + ds(input.endTime || input.startTime), details: input.description || ''});
+      if (input.recurrenceData && input.recurrenceData[0]) p.set('recur', input.recurrenceData[0]);
+      const box = document.getElementById('calOffers'); const row = document.createElement('div'); row.className = 'off';
+      const a = document.createElement('a'); a.href = 'https://calendar.google.com/calendar/render?' + p.toString(); a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = '📅 أضف لتقويم Google: ' + (input.summary || '').replace(/ · .*$/, '');
+      const x = document.createElement('button'); x.className = 'btn sm ghost'; x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'إغلاق');
+      a.onclick = () => setTimeout(() => row.remove(), 300); x.onclick = () => row.remove();
+      row.append(a, x); box.append(row);
+    }
+    return {payload: {}};
+  } };
+
+  const cfg = window.FIREBASE_CONFIG;
+  const auth$ = $('#auth'), err = m => { $('#authErr').textContent = m || ''; };
+  if (!cfg || !cfg.apiKey || /YOUR_|ضع/.test(cfg.apiKey)) {
+    auth$.hidden = false; $('#authForms').hidden = true;
+    $('#authMsg').textContent = 'الموقع ما انربط بـ Firebase بعد. افتح ملف firebase-config.js وحط فيه إعدادات مشروعك (الخطوات في ملف README).';
+    return;
+  }
+  firebase.initializeApp(cfg);
+  const auth = firebase.auth(), fs = firebase.firestore();
+  try { fs.enablePersistence({synchronizeTabs: true}).catch(() => {}); } catch {}
+  const AR = {
+    'auth/invalid-credential': 'البريد أو كلمة المرور غلط.', 'auth/wrong-password': 'كلمة المرور غلط.', 'auth/user-not-found': 'ما فيه حساب بهذا البريد.',
+    'auth/email-already-in-use': 'فيه حساب بهذا البريد، سجّل دخول بدل ما تنشئ حساب.', 'auth/weak-password': 'كلمة المرور لازم ٦ أحرف أو أكثر.',
+    'auth/popup-closed-by-user': 'سكّرت نافذة Google قبل ما تكمل.', 'auth/unauthorized-domain': 'رابط الموقع مو مضاف في Firebase ← Authentication ← Settings ← Authorized domains.',
+    'auth/operation-not-allowed': 'طريقة الدخول هذي مو مفعّلة في Firebase ← Authentication ← Sign-in method.', 'auth/network-request-failed': 'ما فيه اتصال بالإنترنت.',
+  };
+  const fail = e => err(AR[e && e.code] || ('تعذّر الدخول: ' + ((e && e.message) || '')));
+  let signup = false;
+  $('#au_toggle').onclick = () => { signup = !signup; $('#nameRow').hidden = !signup; $('#au_go').textContent = signup ? 'إنشاء حساب' : 'دخول'; $('#au_toggle').textContent = signup ? 'عندك حساب؟ سجّل دخول' : 'ما عندك حساب؟ أنشئ حساب'; err(''); };
+  $('#gSignIn').onclick = () => { err(''); auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(fail); };
+  $('#fLogin').onsubmit = async e => { e.preventDefault(); err('');
+    const em = $('#au_email').value.trim(), pw = $('#au_pass').value;
+    try {
+      if (signup) { const c = await auth.createUserWithEmailAndPassword(em, pw); const nm = $('#au_name').value.trim(); if (nm) await c.user.updateProfile({displayName: nm}); }
+      else await auth.signInWithEmailAndPassword(em, pw);
+    } catch (er) { fail(er); } };
+  $('#au_reset').onclick = () => { const em = $('#au_email').value.trim(); if (!em) return err('اكتب بريدك أول، بعدين اضغط "نسيت كلمة المرور".'); auth.sendPasswordResetEmail(em).then(() => err('أرسلنا رابط تغيير كلمة المرور لبريدك.')).catch(fail); };
+  const out = () => auth.signOut().then(() => location.reload());
+  $('#authOut').onclick = out; $('#signOut').onclick = out;
+  let started = false;
+  auth.onAuthStateChanged(async u => {
+    if (!u) { auth$.hidden = false; return; }
+    const name = u.displayName || (u.email || '').split('@')[0];
+    try { await fs.collection('users').doc(u.uid).set({name, email: u.email || '', lastSeen: new Date().toISOString()}, {merge: true}); }
+    catch (e) {
+      auth$.hidden = false; $('#authForms').hidden = true; $('#authOut').hidden = false;
+      $('#authMsg').textContent = e && e.code === 'permission-denied' ? `حسابك (${u.email}) مو مضاف في قائمة المسموح لهم. اطلب من صاحب المزرعة يضيف بريدك في قواعد Firestore.` : 'تعذّر الاتصال بقاعدة البيانات. تأكد إنك أنشأت Firestore Database في مشروع Firebase.';
+      return;
+    }
+    auth$.hidden = true; $('#who').hidden = false; $('#whoName').textContent = name;
+    if (started) return; started = true;
+    caps.db = fs;
+    caps.user = { id: async () => u.uid, profiles: async ids => { const res = {}; await Promise.all(ids.map(async id => { try { const s = await fs.collection('users').doc(id).get(); if (s.exists) res[id] = {name: (s.data() || {}).name || ''}; } catch {} })); return res; } };
+    ready();
+  });
+})();
+</script>
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mk = (loc, o) => { try { return new Intl.DateTimeFormat(loc, o); } catch { return new Intl.DateTimeFormat('ar', o); } };
+const fG = mk('ar-SA-u-ca-gregory-nu-latn', {day:'numeric', month:'long', year:'numeric'});
+const fGs = mk('ar-SA-u-ca-gregory-nu-latn', {day:'numeric', month:'short'});
+const fM = mk('ar-SA-u-ca-gregory-nu-latn', {month:'short', year:'2-digit'});
+const fW = mk('ar-SA-u-ca-gregory-nu-latn', {weekday:'long'});
+const fH = mk('ar-SA-u-ca-islamic-umalqura-nu-latn', {day:'numeric', month:'long', year:'numeric'});
+const pISO = s => { const [y,m,d] = String(s).split('-').map(Number); return new Date(y, (m||1)-1, d||1); };
+const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const today = () => iso(new Date());
+const okDate = s => /^\d{4}-\d{2}-\d{2}$/.test(String(s||''));
+const fd = s => okDate(s) ? fG.format(pISO(s)) : '—';
+const fw = s => okDate(s) ? fW.format(pISO(s)) : '';
+const fh = s => okDate(s) ? fH.format(pISO(s)) : '';
+const N = n => Number(n || 0).toLocaleString('en-US');
+
+const COLS = ['manure','containers','meds','tasks','contracts','procedures','mortality','inspections','stock','barns'];
+const DIR = {to_store:'من العنابر إلى المستودع', out:'من المستودع إلى خارج المزرعة'};
+const TASKS = {farm_clean:'نظافة المزرعة', water_clean:'نظافة سقايات الماء'};
+const TASKS_ALL = {...TASKS, barn_clean:'نظافة العنابر', store_clean:'نظافة المستودع', disinfect:'تعقيم ورش مطهرات', waste_area:'نظافة منطقة المخلفات'};
+const PCATS = ['إخراج السبلة','استلام النفايات الخطرة','استلام الأدوية الخطرة والمنتهية','تجديد عقد أو ترخيص','زيارة أو تفتيش','تعقيم ومكافحة آفات','أخرى'];
+const REP = {none:'مرة وحدة', weekly:'كل أسبوع', biweekly:'كل أسبوعين', monthly:'كل شهر', quarterly:'كل ٣ شهور', yearly:'كل سنة'};
+const BRAND = 'حمام البستان';
+const S = {manure:[], containers:[], meds:[], tasks:[], contracts:[], procedures:[], mortality:[], inspections:[], stock:[], barns:[], settings:{}};
+const LICENSE_TYPES = ['تصريح بيئي','ترخيص بلدي','سجل تجاري','شهادة دفاع مدني','شهادة صحية لعامل'];
+let userCap = null, myId = null; const names = {}; const namesAsked = new Set();
+let db = null, assets = null, sample = null, dict = null, downloads = null;
+
+/* ---------- helpers ---------- */
+let toastT;
+function toast(msg, kind) {
+  let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role','status'); document.body.append(t); }
+  t.textContent = msg; t.className = 'toast' + (kind ? ' ' + kind : ''); t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3200);
+}
+function setSync(text, kind) { $('#sync').innerHTML = `<i class="dot ${kind}"></i><span>${esc(text)}</span>`; }
+function dbErr(e) {
+  const c = e && e.code;
+  if (c === 'quota_exceeded') return 'امتلأت مساحة التخزين. احذف سجلات قديمة ثم حاول.';
+  if (c === 'invalid_argument') return 'ما عندك صلاحية الحفظ في هذه الصفحة.';
+  return 'تعذّر الحفظ. تحقق من الاتصال وحاول مرة ثانية.';
+}
+async function add(col, data) {
+  if (!db) { toast('الحفظ غير متاح في هذا العرض', 'bad'); return null; }
+  try { const ref = await db.collection(col).add({...data, ...(myId ? {uid: myId} : {}), createdAt: new Date().toISOString()}); try { refreshDates(); } catch {} return ref; }
+  catch (e) { toast(dbErr(e), 'bad'); return null; }
+}
+const byDate = f => (a, b) => String(b[f]||'').localeCompare(String(a[f]||'')) || String(b.createdAt||'').localeCompare(String(a.createdAt||''));
+const exMark = r => r.example ? '<span class="ex">مثال</span>' : '';
+const dateCell = s => `${esc(fd(s))}<span class="d2">${esc(fw(s))}</span>`;
+const delBtn = (col, id) => `<span class="rowacts">${EDIT[col] ? `<button class="btn sm ghost" type="button" data-edit="${col}:${esc(id)}">تعديل</button>` : ''}<button class="btn sm ghost danger" type="button" data-del="${col}:${esc(id)}">حذف</button></span>`;
+const DMETHODS_ = ['حرق','دفن صحي','تسليم لجهة مرخصة'];
+const EDIT = {
+  manure: [['date','التاريخ','date'],['bags','عدد الأكياس','number'],['barn','العنبر','text'],['direction','الحركة','select',DIR],['note','ملاحظة','text']],
+  containers: [['date','التاريخ','date'],['count','العدد','number'],['kind','النوع','text'],['note','ملاحظة','text']],
+  meds: [['name','اسم الدواء','text'],['outDate','تاريخ الإخراج','date'],['qty','الكمية','text'],['returnDate','تاريخ رجوع العبوة الفارغة','date'],['note','ملاحظة','text']],
+  tasks: [['task','نوع النظافة','select',TASKS_ALL],['date','التاريخ','date'],['by','نفّذها','text'],['note','ملاحظة','text']],
+  mortality: [['date','التاريخ','date'],['count','العدد','number'],['barn','العنبر','text'],['method','طريقة التخلص','select',DMETHODS_],['cause','السبب المحتمل','text'],['note','ملاحظة','text']],
+  inspections: [['date','تاريخ الزيارة','date'],['authority','الجهة','text'],['note','الملاحظة','text'],['dueDate','مهلة التصحيح','date']],
+  contracts: [['title','العنوان','text'],['party','الجهة أو الطرف الثاني','text'],['type','النوع','ctype'],['number','الرقم','text'],['startDate','تاريخ البداية','date'],['endDate','تاريخ الانتهاء','date'],['note','ملاحظة','text']],
+  procedures: [['title','الإجراء','text'],['category','التصنيف','select',PCATS],['dueDate','الموعد القادم','date'],['repeat','التكرار','select',REP],['party','الجهة المنفذة','text'],['remindDays','ذكّرني قبل (أيام)','number'],['note','ملاحظة','text']],
+  stock: [['name','الصنف','text'],['kind','النوع','text'],['qty','الكمية','number'],['unit','الوحدة','text'],['expiry','تاريخ الانتهاء','date'],['note','ملاحظة','text']],
+  barns: [['name','اسم العنبر','text'],['birds','عدد الطيور','number']],
+};
+function table(head, rows, foot) {
+  if (!rows.length) return '';
+  return `<div class="tbl-wrap"><table><thead><tr>${head.map(h => `<th class="${h.n?'n':''}">${esc(h.t)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody>${foot ? `<tfoot><tr>${foot}</tr></tfoot>` : ''}</table></div>`;
+}
+const empty = msg => `<div class="empty">${msg}</div>`;
+const inRange = (s, a, b) => okDate(s) && s >= a && s <= b;
+function weekStart(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - x.getDay()); return x; }
+function contractStatus(c) {
+  if (!okDate(c.endDate)) return {k:'mute', t:'بدون تاريخ انتهاء'};
+  const t = today(); if (c.endDate < t) return {k:'bad', t:'منتهي'};
+  const days = Math.round((pISO(c.endDate) - pISO(t)) / 864e5);
+  if (days <= 30) return {k:'warn', t:`ينتهي خلال ${days} يوم`};
+  return {k:'good', t:'ساري'};
+}
+/* who logged it */
+const nameOf = uid => uid ? (names[uid] || '') : '';
+const fT = mk('ar-SA-u-nu-latn', {hour:'numeric', minute:'2-digit'});
+const tm = r => { try { return r && r.createdAt ? fT.format(new Date(r.createdAt)) : ''; } catch { return ''; } };
+const byTag = r => { const n = nameOf(r.uid); const s = [n && 'سجّله: ' + n, tm(r) && 'الساعة ' + tm(r)].filter(Boolean).join(' · '); return s ? `<span class="d2">${esc(s)}</span>` : ''; };
+async function resolveNames() {
+  if (!userCap || !userCap.profiles) return;
+  const ids = [...new Set(COLS.flatMap(c => S[c].flatMap(r => [r.uid, ...((r.history || []).map(h => h.uid))])).filter(Boolean))].filter(id => !namesAsked.has(id));
+  if (!ids.length) return;
+  ids.forEach(id => namesAsked.add(id));
+  try { const ps = await userCap.profiles(ids.slice(0, 64)); let changed = false;
+    for (const id of ids) { const n = ps && ps[id] && ps[id].name; if (n) { names[id] = n; changed = true; } }
+    if (changed) renderAll(); } catch {}
+}
+/* receipts */
+/* a file lives either in the asset store ({id}) or, as a fallback, in a db doc under "blobs" ({doc}) */
+const blobCache = {}; const blobPending = new Set();
+function thumbs(files, big) {
+  const cls = big ? 'thumb' : 'thumb sm';
+  return (files || []).map(f => {
+    const pdf = /pdf/.test(f.type || '');
+    if (f.id) return pdf ? `<a class="${cls}" href="/_blob/${esc(f.id)}" target="_blank" rel="noopener" title="${esc(f.name || '')}">PDF</a>` : `<img class="${cls}" src="/_blob/${esc(f.id)}" alt="${esc(f.name || 'مرفق')}" data-zoom="/_blob/${esc(f.id)}" loading="lazy">`;
+    if (f.doc) return pdf ? `<button class="${cls}" type="button" data-pdfdoc="${esc(f.doc)}" data-name="${esc(f.name || 'ملف.pdf')}" title="${esc(f.name || '')}">PDF</button>` : `<img class="${cls}" data-blob="${esc(f.doc)}" alt="${esc(f.name || 'مرفق')}" data-zoom="">`;
+    return '';
+  }).join('');
+}
+async function blobData(id) {
+  if (blobCache[id]) return blobCache[id];
+  const s = await db.doc('blobs/' + id).get();
+  const d = s.exists ? (s.data() || {}).data : '';
+  if (d) blobCache[id] = d;
+  return d;
+}
+function hydrateBlobs() {
+  if (!db) return;
+  $$('img[data-blob]').forEach(img => {
+    const id = img.dataset.blob;
+    if (blobCache[id]) { if (img.src !== blobCache[id]) img.src = blobCache[id]; return; }
+    if (blobPending.has(id)) return;
+    blobPending.add(id);
+    blobData(id).then(d => { if (d) $$(`img[data-blob="${CSS.escape(id)}"]`).forEach(x => x.src = d); }).catch(() => {}).finally(() => blobPending.delete(id));
+  });
+}
+const readAsDataURL = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.onerror = rej; fr.readAsDataURL(b); });
+const BLOB_LIMIT = 600000;
+async function shrinkImage(file, limit = BLOB_LIMIT) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    for (const [max, q] of [[1800, .8], [1500, .7], [1200, .62], [1000, .55], [800, .5]]) {
+      const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      const b = await new Promise(r => c.toBlob(r, 'image/jpeg', q));
+      if (b && b.size < limit) return b;
+    }
+    return null;
+  } finally { URL.revokeObjectURL(url); }
+}
+async function storeInDb(f) {
+  const pdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+  let blob = f;
+  if (!pdf) blob = await shrinkImage(f);
+  if (!blob || blob.size > BLOB_LIMIT) { toast(pdf ? `ملف PDF "${f.name}" كبير. صوّر صفحاته وارفعها كصور.` : `ما قدرت أصغّر الصورة ${f.name}`, 'bad'); return null; }
+  const data = await readAsDataURL(blob);
+  const ref = await db.collection('blobs').add({data, name: f.name, type: pdf ? 'application/pdf' : 'image/jpeg', createdAt: new Date().toISOString()});
+  blobCache[ref.id] = data;
+  return {doc: ref.id, name: f.name, type: pdf ? 'application/pdf' : 'image/jpeg'};
+}
+async function removeFiles(files) {
+  for (const f of (files || [])) {
+    try { if (f.id && assets) await assets.delete(f.id); else if (f.doc && db) await db.collection('blobs').doc(f.doc).delete(); } catch {}
+  }
+}
+function needsRcpt(col, r) {
+  if (col === 'manure') return r.direction === 'out';
+  if (col === 'containers') return true;
+  if (col === 'mortality') return r.method === 'تسليم لجهة مرخصة';
+  return false;
+}
+function rcptCell(col, r, key) {
+  const t = thumbs(r.receipts); const need = needsRcpt(col, r) && !t;
+  const btn = db ? `<button class="btn sm ghost" type="button" data-attach="${col}:${esc(key || r.id)}" title="أرفق صورة السند">${t ? '＋' : (need ? '<span class="chip warn">أرفق السند</span>' : 'أرفق')}</button>` : (need ? '<span class="chip warn">بدون سند</span>' : (t ? '' : '—'));
+  return `<div class="row" style="flex-wrap:nowrap;gap:4px">${t}${btn}</div>`;
+}
+function upErr(er, name) {
+  const c = er && er.code;
+  if (c === 'too_large') return `الملف ${name} أكبر من ٢٠ ميجا`;
+  if (c === 'unsupported_type') return `نوع الملف ${name} غير مدعوم (استخدم صورة JPG أو PNG أو PDF)`;
+  if (c === 'quota_or_state') return 'امتلأت مساحة الملفات';
+  return `تعذّر رفع ${name}`;
+}
+async function uploadFiles(files) {
+  const up = [];
+  if (!files || !files.length) return up;
+  if (!db) { toast('الحفظ غير متاح في هذا العرض', 'bad'); return up; }
+  const PERM = ['not_granted','capability_disabled','capability_removed','upstream_auth','upstream_error','store_unavailable','rate_limited','transform_error'];
+  for (const f of files) {
+    const pdf = /\.pdf$/i.test(f.name);
+    const type = pdf ? 'application/pdf' : (/^image\/(png|jpeg|webp|gif)$/.test(f.type) ? f.type : undefined);
+    if (assets && (pdf || type)) {
+      try { const r = await assets.upload(f, {type}); up.push({id: r.id, name: f.name, type: r.contentType}); continue; }
+      catch (er) { if (!PERM.includes(er && er.code) && er && er.code !== 'unsupported_type') { toast(upErr(er, f.name), 'bad'); continue; } }
+    }
+    try { const x = await storeInDb(f); if (x) up.push(x); }
+    catch (er) { toast(er && er.code === 'quota_exceeded' ? 'امتلأت مساحة التخزين' : `تعذّر حفظ ${f.name}`, 'bad'); }
+  }
+  return up;
+}
+function receiptStats(R) {
+  const items = [
+    ...R.manure.filter(r => needsRcpt('manure', r)).map(r => ({has: !!(r.receipts || []).length})),
+    ...R.containers.map(r => ({has: !!(r.receipts || []).length})),
+    ...R.mortality.filter(r => needsRcpt('mortality', r)).map(r => ({has: !!(r.receipts || []).length})),
+    ...R.procs.map(x => ({has: !!(x.receipts || []).length})),
+  ];
+  return {need: items.length, has: items.filter(x => x.has).length};
+}
+
+/* ---------- routing ---------- */
+const VIEWS = ['home','worker','procedures','manure','containers','meds','tasks','mortality','inspections','contracts','kit'];
+function route() {
+  let v = location.hash.slice(1); if (v === 'reports') v = 'kit';
+  if (!VIEWS.includes(v)) v = 'home';
+  $$('[data-view]').forEach(s => s.hidden = s.dataset.view !== v);
+  $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.v === v));
+  document.body.classList.toggle('worker', v === 'worker');
+  $('#searchbar').hidden = ['home', 'worker'].includes(v);
+  const q = $('#q'); if (q && q.value) { q.value = ''; }
+  applyFilter();
+  window.scrollTo(0, 0);
+}
+/* search inside the visible section */
+function applyFilter() {
+  const q = $('#q'); const raw = q ? q.value.trim() : '';
+  const view = $('[data-view]:not([hidden])'); if (!view) return;
+  const els = $$('tbody tr, .ccard, .rem-i, .tl-i', view);
+  if (!raw) { els.forEach(el => el.hidden = false); $('#qInfo').textContent = ''; return; }
+  const nq = norm(raw.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+  let shown = 0;
+  els.forEach(el => { const ok = norm(el.textContent.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))).includes(nq); el.hidden = !ok; if (ok) shown++; });
+  $('#qInfo').textContent = `${N(shown)} نتيجة`;
+}
+addEventListener('hashchange', route);
+
+/* ---------- render ---------- */
+function renderAll() {
+  COLS.forEach(c => { const el = $(`[data-cnt="${c}"]`); if (el) el.textContent = S[c].length ? N(S[c].length) : ''; });
+  const dueN = S.procedures.filter(p => p.active !== false && procState(p).urgent).length;
+  const pc = $('[data-cnt="procedures"]'); pc.textContent = dueN ? N(dueN) : ''; pc.classList.toggle('due', dueN > 0);
+  $('#farmName').textContent = S.settings.name || BRAND;
+  $('#exBanner').hidden = !COLS.some(c => S[c].some(r => r.example));
+  const openI = S.inspections.filter(i => i.status !== 'closed');
+  const ic = $('[data-cnt="inspections"]'); ic.textContent = openI.length ? N(openI.length) : ''; ic.classList.toggle('due', openI.some(i => inspState(i).k !== 'good'));
+  $('#medNames').innerHTML = [...new Set([...S.meds.map(m => m.name), ...S.stock.map(s => s.name)].filter(Boolean))].map(n => `<option value="${esc(n)}">`).join('');
+  renderHome(); renderProcedures(); renderManure(); renderCont(); renderMeds(); renderStock(); renderTasks(); renderDead(); renderInsp(); renderContracts(); renderReports(); renderKit();
+  $('#barnNames').innerHTML = [...new Set([...S.barns.map(b => b.name), ...S.manure.map(r => r.barn), ...S.mortality.map(r => r.barn)].filter(Boolean))].map(n => `<option value="${esc(n)}">`).join('');
+  renderBarns(); renderWorker(); renderBackupInfo();
+  resolveNames(); hydrateBlobs(); applyFilter();
+}
+
+/* ---------- edit any record ---------- */
+let editing = null;
+function openEdit(col, id) {
+  const rec = S[col] && S[col].find(r => r.id === id); if (!rec || !EDIT[col]) return;
+  editing = {col, id, rec};
+  const ctypes = [...$('#k_type').querySelectorAll('option')].map(o => o.textContent);
+  $('#editTitle').textContent = 'تعديل: ' + ({manure:'السبلة', containers:'العبوات الخطرة', meds:'الأدوية', tasks:'النظافة', mortality:'النافق', inspections:'ملاحظة التفتيش', contracts:'العقد / الترخيص', procedures:'الإجراء البيئي', stock:'المخزون', barns:'العنبر'}[col] || '');
+  $('#fEdit').innerHTML = EDIT[col].map(([k, label, type, opts], i) => {
+    const v = rec[k] ?? '';
+    if (type === 'select' || type === 'ctype') {
+      const list = type === 'ctype' ? ctypes.map(x => [x, x]) : Array.isArray(opts) ? opts.map(x => [x, x]) : Object.entries(opts);
+      if (v && !list.some(([val]) => val === v)) list.push([v, v]);
+      return `<label class="f">${esc(label)}<select data-ek="${k}" id="ed_${i}">${list.map(([val, l]) => `<option value="${esc(val)}"${val === v ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`;
+    }
+    return `<label class="f${k === 'note' ? ' wide' : ''}">${esc(label)}<input id="ed_${i}" data-ek="${k}" type="${type === 'number' ? 'number' : type}"${type === 'number' ? ' step="any"' : ''} value="${esc(v)}"></label>`;
+  }).join('') + `<div class="row" style="grid-column:1/-1;justify-content:flex-end"><button class="btn ghost" type="button" id="editCancel">إلغاء</button><button class="btn pri" type="submit">حفظ التعديل</button></div>`;
+  $('#editModal').hidden = false;
+  const first = $('#fEdit [data-ek]'); if (first) first.focus();
+}
+function closeEdit() { $('#editModal').hidden = true; editing = null; }
+$('#editClose').onclick = closeEdit;
+$('#editModal').addEventListener('click', e => { if (e.target.id === 'editModal' || e.target.id === 'editCancel') closeEdit(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#editModal').hidden) closeEdit(); });
+$('#fEdit').onsubmit = async e => { e.preventDefault(); if (!editing || !db) return;
+  const {col, id, rec} = editing; const patch = {};
+  $$('#fEdit [data-ek]').forEach(el => { const k = el.dataset.ek; const def = EDIT[col].find(x => x[0] === k); let v = el.value.trim();
+    if (def[2] === 'number') v = v === '' ? 0 : Number(v);
+    if (String(rec[k] ?? '') !== String(v)) patch[k] = v; });
+  if (!Object.keys(patch).length) { closeEdit(); return; }
+  const btn = e.target.querySelector('[type=submit]'); btn.disabled = true;
+  try {
+    await db.collection(col).doc(id).update({...patch, editedAt: new Date().toISOString(), ...(myId ? {editedBy: myId} : {})});
+    toast('تم حفظ التعديل');
+    if (mcp && rec.calEventId) {
+      try {
+        if (col === 'procedures' && (patch.dueDate || patch.title)) { const p = {...rec, ...patch}; await calMove(p, p.dueDate, false); }
+        if (col === 'contracts' && patch.endDate && okDate(patch.endDate)) { const end = pISO(patch.endDate); end.setDate(end.getDate() + 1); await mcp.callTool(CAL, 'update_event', {eventId: rec.calEventId, allDay: true, startTime: `${patch.endDate}T00:00:00`, endTime: `${iso(end)}T00:00:00`, notificationLevel: 'NONE'}); await db.collection(col).doc(id).update({calDue: patch.endDate}); }
+        if (col === 'inspections' && patch.dueDate && okDate(patch.dueDate)) { const end = pISO(patch.dueDate); end.setDate(end.getDate() + 1); await mcp.callTool(CAL, 'update_event', {eventId: rec.calEventId, allDay: true, startTime: `${patch.dueDate}T00:00:00`, endTime: `${iso(end)}T00:00:00`, notificationLevel: 'NONE'}); await db.collection(col).doc(id).update({calDue: patch.dueDate}); }
+      } catch (er) { toast('انحفظ التعديل، لكن ما تحدّث التقويم: ' + calErr(er), 'bad'); }
+    }
+    closeEdit();
+  } catch (er) { toast(dbErr(er), 'bad'); } finally { btn.disabled = false; }
+};
+
+/* ---------- barns ---------- */
+function barnOf(name) { return S.barns.find(b => nameMatch(b.name, name)); }
+function renderBarns() {
+  const [a, b] = monthBounds(0);
+  const rows = S.barns.slice().sort((x, y) => String(x.name).localeCompare(String(y.name), 'ar')).map(br => {
+    const dead = S.mortality.filter(r => inRange(r.date, a, b) && nameMatch(br.name, r.barn)).reduce((s, r) => s + Number(r.count || 0), 0);
+    const rate = Number(br.birds) ? dead / Number(br.birds) * 100 : null;
+    const k = rate == null ? 'mute' : rate >= 3 ? 'bad' : rate >= 1 ? 'warn' : 'good';
+    return `<tr><td><b>${esc(br.name)}</b>${exMark(br)}</td><td class="n">${N(br.birds)}</td><td class="n">${N(dead)}</td><td><span class="chip ${k}">${rate == null ? '—' : rate.toFixed(2) + '%'}</span></td><td>${delBtn('barns', br.id)}</td></tr>`;
+  });
+  $('#barnTbl').innerHTML = table([{t:'العنبر'},{t:'عدد الطيور',n:1},{t:'نافق هذا الشهر',n:1},{t:'نسبة النافق'},{t:''}], rows) || empty('أضف عنابرك وعدد الطيور في كل واحد، عشان تنحسب نسبة النافق.');
+}
+$('#fBarn').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const r = await add('barns', {name: val('b_name'), birds: Number(val('b_birds'))});
+  if (r) { toast('انضاف العنبر'); ['b_name','b_birds'].forEach(id => $('#' + id).value = ''); } }); };
+
+/* ---------- worker mode ---------- */
+function renderWorker() {
+  $('#wDate').textContent = `${fw(today())}، ${fd(today())}`;
+  $('#quickClean2').innerHTML = Object.entries(TASKS_ALL).map(([k, v]) => { const done = S.tasks.some(r => r.task === k && r.date === today());
+    return `<button class="btn${done ? '' : ' pri'}" type="button" data-qclean="${k}"${done ? ' disabled' : ''}>${done ? '✓ ' : ''}${esc(v)}</button>`; }).join('');
+  const t = today();
+  const items = [
+    ...S.manure.filter(r => r.date === t).map(r => ['c-manure', `${N(r.bags)} كيس سبلة ${r.direction === 'out' ? 'خارج المزرعة' : 'للمستودع'}${r.barn ? ' — ' + r.barn : ''}`, r]),
+    ...S.mortality.filter(r => r.date === t).map(r => ['c-dead', `نافق ${N(r.count)}${r.barn ? ' — ' + r.barn : ''}`, r]),
+    ...S.containers.filter(r => r.date === t).map(r => ['c-cont', `${N(r.count)} عبوة خطرة`, r]),
+    ...S.tasks.filter(r => r.date === t).map(r => ['c-tasks', TASKS_ALL[r.task] || r.task, r]),
+  ];
+  $('#wToday').innerHTML = items.length ? items.map(([c, txt, r]) => `<div class="tl-i"><i class="dot ${c}"></i><div>${esc(txt)}${nameOf(r.uid) ? `<span class="d2">${esc(nameOf(r.uid))}</span>` : ''}</div><span class="t">${esc(tm(r) || 'اليوم')}</span></div>`).join('') : empty('ما فيه شيء مسجل اليوم.');
+}
+$('#fWManure').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const r = await add('manure', {date: today(), bags: Number(val('w_bags')), barn: val('w_barn'), direction: $('#w_dir').value, note: '', receipts: []});
+  if (r) { toast('انحفظت السبلة'); $('#w_bags').value = ''; } }); };
+$('#fWDead').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const r = await add('mortality', {date: today(), count: Number(val('w_dead')), barn: val('w_dbarn'), method: $('#w_method').value, cause: '', note: '', receipts: []});
+  if (r) { toast('انحفظ النافق'); $('#w_dead').value = ''; } }); };
+$('#fWCont').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const r = await add('containers', {date: today(), count: Number(val('w_cont')), kind: '', note: '', receipts: []});
+  if (r) { toast('انحفظت العبوات'); $('#w_cont').value = ''; } }); };
+
+/* ---------- backup ---------- */
+function renderBackupInfo() {
+  const s = S.settings || {};
+  $('#backupInfo').textContent = s.lastBackup ? `آخر نسخة: ${fd(s.lastBackup)}` : 'ما أخذت نسخة احتياطية بعد';
+  $('#bkCal').textContent = s.backupCalId ? '✓ التذكير الشهري في التقويم' : 'تذكير شهري في التقويم';
+  $('#bkCal').disabled = !!s.backupCalId;
+}
+$('#bkDl').onclick = async e => {
+  if (!db) return toast('الحفظ غير متاح في هذا العرض', 'bad');
+  const b = e.currentTarget; b.disabled = true; $('#bkMsg').textContent = 'جارِ تجهيز النسخة…';
+  try {
+    const out = {app: 'hamam-albustan-log', version: 1, exportedAt: new Date().toISOString(), settings: S.settings || {}, collections: {}, blobs: {}};
+    for (const c of COLS) out.collections[c] = S[c].filter(r => !r.example).map(r => JSON.parse(JSON.stringify(r)));
+    /* files kept in the asset store are copied into the backup itself, so they move to any other copy of this app */
+    const exportFile = async f => {
+      if (!f || !f.id) return f;
+      try {
+        const b = await (await fetch('/_blob/' + f.id)).blob(); const pdf = /pdf/.test(f.type || '');
+        const small = pdf ? b : await shrinkImage(new File([b], f.name || 'img', {type: b.type}), 600000);
+        if (!small || small.size > 700000) return f;
+        const key = 'a' + f.id, type = pdf ? 'application/pdf' : 'image/jpeg';
+        out.blobs[key] = {data: await readAsDataURL(small), name: f.name || '', type, createdAt: new Date().toISOString()};
+        return {doc: key, name: f.name || '', type};
+      } catch { return f; }
+    };
+    let nf = 0;
+    for (const c of COLS) for (const r of out.collections[c]) {
+      for (const k of ['files', 'receipts']) if (Array.isArray(r[k])) for (let i = 0; i < r[k].length; i++) { if (r[k][i] && r[k][i].id) { r[k][i] = await exportFile(r[k][i]); $('#bkMsg').textContent = `جارِ نسخ الملفات… ${N(++nf)}`; } }
+      for (const h of (r.history || [])) if (Array.isArray(h.receipts)) for (let i = 0; i < h.receipts.length; i++) if (h.receipts[i] && h.receipts[i].id) { h.receipts[i] = await exportFile(h.receipts[i]); $('#bkMsg').textContent = `جارِ نسخ الملفات… ${N(++nf)}`; }
+    }
+    try { const bs = await db.collection('blobs').get(); bs.docs.forEach(d => { out.blobs[d.id] = d.data(); }); } catch {}
+    const total = Object.values(out.collections).reduce((s, l) => s + l.length, 0);
+    const res = await downloads.save({filename: `نسخة-حمام-البستان-${today()}.json`, data: JSON.stringify(out)}).catch(er => { throw er; });
+    if (res) { try { await db.doc('config/farm').set({...(S.settings || {}), lastBackup: today()}); } catch {} }
+    $('#bkMsg').textContent = `انحفظت النسخة: ${N(total)} سجل و${N(Object.keys(out.blobs).length)} ملف.`;
+  } catch (er) { $('#bkMsg').textContent = er && er.code === 'declined' ? 'ألغيت التنزيل.' : 'تعذّر تنزيل النسخة.'; }
+  finally { b.disabled = false; }
+};
+$('#bkRestoreBtn').onclick = () => $('#bkFile').click();
+$('#bkFile').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f || !db) return;
+  $('#bkMsg').textContent = 'جارِ قراءة النسخة…';
+  try {
+    const data = JSON.parse(await f.text());
+    if (!data || data.app !== 'hamam-albustan-log' || !data.collections) { $('#bkMsg').textContent = 'هذا الملف مو نسخة من هذي الصفحة.'; return; }
+    let added = 0, skipped = 0;
+    for (const [id, bdoc] of Object.entries(data.blobs || {})) { try { const s = await db.doc('blobs/' + id).get(); if (!s.exists) await db.doc('blobs/' + id).set(bdoc); } catch {} }
+    for (const c of COLS) for (const r of (data.collections[c] || [])) {
+      if (!r || !r.id) continue;
+      if (S[c].some(x => x.id === r.id)) { skipped++; continue; }
+      const {id, ...body} = r;
+      try { await db.collection(c).doc(id).set(body); added++; } catch {}
+      if (added % 10 === 0) $('#bkMsg').textContent = `جارِ الاسترجاع… ${N(added)} سجل`;
+    }
+    $('#bkMsg').textContent = `تم الاسترجاع: ${N(added)} سجل جديد، و${N(skipped)} موجود من قبل وما تغيّر.`;
+  } catch { $('#bkMsg').textContent = 'تعذّر قراءة الملف.'; }
+});
+$('#bkCal').onclick = async e => {
+  if (!mcp || !db) return; const b = e.currentTarget; b.disabled = true;
+  try {
+    const d = new Date(); d.setMonth(d.getMonth() + 1, 1); const start = iso(d); const end = new Date(d); end.setDate(end.getDate() + 1);
+    const res = await mcp.callTool(CAL, 'create_event', {summary: `خذ نسخة احتياطية من سجل المزرعة · ${BRAND}`, allDay: true, startTime: `${start}T00:00:00`, endTime: `${iso(end)}T00:00:00`, recurrenceData: ['RRULE:FREQ=MONTHLY;BYMONTHDAY=1'], description: 'افتح سجل حمام البستان ← الرئيسية ← النسخة الاحتياطية ← تنزيل نسخة احتياطية', overrideReminders: [{method: 'popup', minutes: 0}], notificationLevel: 'NONE'});
+    await db.doc('config/farm').set({...(S.settings || {}), backupCalId: findId(res && res.payload) || 'added'});
+    toast('انضاف تذكير شهري أول كل شهر');
+  } catch (er) { toast(calErr(er), 'bad'); b.disabled = false; }
+};
+
+/* ---------- medicine use reduces stock ---------- */
+async function deductStock(name, qtyText) {
+  const s = S.stock.find(x => nameMatch(x.name, name)); if (!s || !db) return '';
+  const m = String(qtyText || '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).match(/\d+(\.\d+)?/);
+  const n = m ? Number(m[0]) : 1;
+  const left = Math.max(0, Math.round((Number(s.qty || 0) - n) * 100) / 100);
+  try { await db.collection('stock').doc(s.id).update({qty: left}); return ` وانخصم ${N(n)} من المخزون (باقي ${left} ${s.unit || ''})`; } catch { return ''; }
+}
+
+/* ---------- procedures ---------- */
+function addPeriod(s, rep) {
+  const d = pISO(s);
+  if (rep === 'weekly') d.setDate(d.getDate() + 7);
+  else if (rep === 'biweekly') d.setDate(d.getDate() + 14);
+  else if (rep === 'monthly') d.setMonth(d.getMonth() + 1);
+  else if (rep === 'quarterly') d.setMonth(d.getMonth() + 3);
+  else if (rep === 'yearly') d.setFullYear(d.getFullYear() + 1);
+  return iso(d);
+}
+function procState(p) {
+  if (!okDate(p.dueDate)) return {k:'mute', t:'بدون موعد', days:null, urgent:false};
+  const days = Math.round((pISO(p.dueDate) - pISO(today())) / 864e5);
+  const rd = Number(p.remindDays ?? 3);
+  if (days < 0) return {k:'bad', t:`متأخر ${N(-days)} يوم`, days, urgent:true, cls:'over'};
+  if (days === 0) return {k:'warn', t:'اليوم', days, urgent:true, cls:'today'};
+  if (days === 1) return {k:'warn', t:'بكرة', days, urgent:true, cls:'today'};
+  if (days <= rd) return {k:'warn', t:`بعد ${N(days)} أيام`, days, urgent:true, cls:''};
+  return {k:'good', t:`بعد ${N(days)} يوم`, days, urgent:false, cls:''};
+}
+const activeProcs = () => S.procedures.filter(p => p.active !== false).sort((a, b) => String(a.dueDate||'9').localeCompare(String(b.dueDate||'9')));
+function remItem(p) {
+  const st = procState(p); const d = okDate(p.dueDate) ? pISO(p.dueDate) : null;
+  return `<div class="rem-i ${st.cls || ''}"><div class="when">${d ? `<span>${d.getDate()}</span>${esc(fM.format(d).replace(/\s?\d+$/, ''))}` : '—'}</div>
+    <div><b>${esc(p.title)}${exMark(p)}</b><small>${esc(p.category || '')}${p.party ? ' · ' + esc(p.party) : ''} · ${esc(REP[p.repeat] || REP.none)}</small></div>
+    <span class="chip ${st.k}">${esc(st.t)}</span></div>`;
+}
+function renderProcedures() {
+  const A = activeProcs(); const t = today();
+  const over = A.filter(p => procState(p).days < 0).length, soon = A.filter(p => procState(p).urgent).length;
+  const [ma, mb] = monthBounds(0);
+  const doneM = S.procedures.reduce((s, p) => s + (p.history || []).filter(h => inRange(h.done, ma, mb)).length, 0);
+  $('#procKpis').innerHTML = kpi('c-proc','إجراءات نشطة', N(A.length), 'موعد مجدول') + kpi('c-proc','تحتاج انتباه', N(soon), 'متأخر أو قريب', soon > 0) + kpi('c-proc','متأخرة', N(over), 'تجاوزت موعدها', over > 0) + kpi('c-proc','نُفذت هذا الشهر', N(doneM), 'إجراء');
+  $('#procList').innerHTML = A.length ? A.map(p => { const st = procState(p); const hist = (p.history || []).map((h, i) => ({...h, i})).reverse();
+    return `<article class="ccard"${st.cls === 'over' ? ' style="border-color:color-mix(in srgb,var(--bad) 45%,var(--line))"' : ''}>
+      <div class="card-h" style="margin:0"><span class="tag"><i class="dot c-proc"></i>${esc(p.category || 'أخرى')}</span><span class="chip ${st.k}">${esc(st.t)}</span></div>
+      <h3>${esc(p.title)}${exMark(p)}</h3>
+      <dl><dt>الموعد</dt><dd>${esc(fw(p.dueDate))} ${esc(fd(p.dueDate))}</dd><dt>التكرار</dt><dd>${esc(REP[p.repeat] || REP.none)}</dd>${p.party ? `<dt>الجهة</dt><dd>${esc(p.party)}</dd>` : ''}<dt>التذكير</dt><dd>قبل ${N(p.remindDays ?? 3)} يوم</dd>${p.note ? `<dt>ملاحظة</dt><dd>${esc(p.note)}</dd>` : ''}</dl>
+      <div class="row" style="flex-wrap:nowrap"><input type="date" value="${t}" data-pdate="${esc(p.id)}" style="width:150px;padding:5px 8px" aria-label="تاريخ التنفيذ"><button class="btn sm pri" type="button" data-pdone="${esc(p.id)}">تم التنفيذ</button></div>
+      ${hist.length ? `<div class="hist" style="max-height:180px">${hist.map(h => `<div class="row" style="justify-content:space-between;gap:6px"><span>✓ نُفذ ${esc(fd(h.done))}${h.done > h.due ? ` <span class="chip warn">متأخر ${N(Math.round((pISO(h.done) - pISO(h.due)) / 864e5))} يوم</span>` : ''}${nameOf(h.uid) ? ' · ' + esc(nameOf(h.uid)) : ''}</span>${p.example ? '' : rcptCell('procedures', {receipts: h.receipts}, p.id + ':' + h.i)}</div>`).join('')}</div>` : ''}
+      ${calLine(p)}
+      <div class="row" style="justify-content:space-between"><button class="btn sm ghost" type="button" data-psnooze="${esc(p.id)}">أجّل أسبوع</button>${delBtn('procedures', p.id)}</div></article>`; }).join('')
+    : empty('ما فيه إجراءات مجدولة. أضف أول موعد من النموذج فوق، مثل موعد شركة النفايات الخطرة.');
+  const D = S.procedures.filter(p => p.active === false);
+  $('#procDoneWrap').hidden = !D.length;
+  $('#procDone').innerHTML = table([{t:'الإجراء'},{t:'التصنيف'},{t:'الموعد'},{t:'تاريخ التنفيذ'},{t:''}], D.map(p => { const h = (p.history || []).slice(-1)[0] || {}; return `<tr><td>${esc(p.title)}${exMark(p)}</td><td>${esc(p.category || '')}</td><td>${esc(fd(h.due))}</td><td>${esc(fd(h.done))}</td><td>${delBtn('procedures', p.id)}</td></tr>`; }));
+}
+async function markProcDone(id, date) {
+  const p = S.procedures.find(x => x.id === id); if (!p || !db) return false;
+  const done = okDate(date) ? date : today();
+  const history = [...(p.history || []), {due: p.dueDate || done, done, ...(myId ? {uid: myId} : {})}].slice(-60);
+  const patch = {history};
+  if (p.repeat && p.repeat !== 'none' && okDate(p.dueDate)) { let n = addPeriod(p.dueDate, p.repeat); while (n <= done) n = addPeriod(n, p.repeat); patch.dueDate = n; }
+  else patch.active = false;
+  await db.collection('procedures').doc(id).update(patch);
+  await calFollow(p, patch.dueDate || p.dueDate, !patch.dueDate);
+  return patch.dueDate || true;
+}
+
+/* ---------- Google Calendar ---------- */
+const CAL = 'Google Calendar';
+let mcp = null;
+function calErr(e) {
+  const c = e && e.code;
+  if (c === 'server_not_connected' || c === 'server_not_found') return 'أضف Google Calendar من إعدادات claude.ai ← Connectors ثم حاول.';
+  if (c === 'needs_reauth') return 'انتهى ربط Google Calendar. أعد ربطه من إعدادات claude.ai ← Connectors.';
+  if (c === 'selection_required') return 'عندك أكثر من حساب تقويم. اختر واحد من النافذة اللي تطلع ثم حاول.';
+  if (c === 'not_in_manifest' || c === 'approval_required' || c === 'consent_required') return 'لازم توافق على استخدام التقويم لهذه الصفحة. اضغط الزر مرة ثانية ووافق.';
+  if (c === 'blocked_by_policy') return 'سياسة الحساب تمنع الوصول للتقويم.';
+  if (c === 'tool_error') return 'رفض التقويم الطلب: ' + String(e.message || '').slice(0, 120);
+  if (c === 'server_unavailable' || c === 'upstream_error' || c === 'cancelled') return 'ما وصلنا رد من التقويم. افتح تقويمك وتأكد قبل ما تحاول مرة ثانية حتى ما يتكرر الموعد.';
+  return 'تعذّر الوصول لتقويم Google.';
+}
+function findId(o, depth = 0) {
+  if (!o || typeof o !== 'object' || depth > 3) return '';
+  for (const k of ['id', 'eventId']) if (typeof o[k] === 'string' && o[k]) return o[k];
+  for (const k of ['event', 'result', 'data', 'item']) { const r = findId(o[k], depth + 1); if (r) return r; }
+  return '';
+}
+function calInput(p, due) {
+  const rd = Math.max(1, Number(p.remindDays ?? 3)); const end = pISO(due); end.setDate(end.getDate() + 1);
+  const m = Math.min(40320, rd * 1440 - 540);  // rd days before, 9:00
+  const rem = [{method: 'popup', minutes: m}, {method: 'email', minutes: m}];
+  if (rd > 1) rem.push({method: 'popup', minutes: 900});  // day before, 9:00
+  return {summary: `${p.title} · ${BRAND}`, allDay: true, startTime: `${due}T00:00:00`, endTime: `${iso(end)}T00:00:00`,
+    description: [p.category, p.party ? 'الجهة: ' + p.party : '', p.note || '', REP[p.repeat] ? 'التكرار: ' + REP[p.repeat] : '', 'من سجل حمام البستان'].filter(Boolean).join('\n'),
+    overrideReminders: rem, notificationLevel: 'NONE'};
+}
+async function calAdd(p) {
+  const res = await mcp.callTool(CAL, 'create_event', calInput(p, p.dueDate));
+  const id = findId(res && res.payload);
+  await db.collection('procedures').doc(p.id).update({calEventId: id, calDue: p.dueDate});
+  return id;
+}
+async function calMove(p, due, done) {
+  const i = calInput(p, due);
+  await mcp.callTool(CAL, 'update_event', {eventId: p.calEventId, allDay: true, startTime: i.startTime, endTime: i.endTime, summary: (done ? '✓ ' : '') + i.summary, overrideReminders: i.overrideReminders, notificationLevel: 'NONE'});
+  await db.collection('procedures').doc(p.id).update({calDue: due});
+}
+async function calFollow(p, due, done) {
+  if (!mcp || !p.calEventId) return;
+  try { await calMove(p, due, done); } catch (e) { toast('انحفظ هنا، لكن ما تحدّث التقويم: ' + calErr(e), 'bad'); }
+}
+function calLine(p) {
+  if (!mcp) return '';
+  if (p.example) return '<small>مثال تجريبي، ما ينضاف للتقويم</small>';
+  if (p.calDue && p.calDue === p.dueDate) return '<span class="chip good" style="align-self:flex-start">✓ في تقويم Google</span>';
+  if (p.calDue && !p.calEventId) return `<button class="btn sm" type="button" data-pcal="${esc(p.id)}" style="align-self:flex-start">أضف الموعد الجديد لتقويم Google</button>`;
+  return `<button class="btn sm" type="button" data-pcal="${esc(p.id)}" style="align-self:flex-start">أضف لتقويم Google</button>`;
+}
+async function calSync(p) {
+  if (p.calEventId && p.calDue !== p.dueDate) await calMove(p, p.dueDate, false);
+  else await calAdd(p);
+}
+
+function monthBounds(off = 0) { const d = new Date(); const a = new Date(d.getFullYear(), d.getMonth() + off, 1); const b = new Date(d.getFullYear(), d.getMonth() + off + 1, 0); return [iso(a), iso(b)]; }
+
+function renderHome() {
+  const t = today();
+  $('#todayTitle').textContent = `${fw(t)}، ${fd(t)}`;
+  $('#todaySub').textContent = `${fh(t)} هـ`;
+  const [a, b] = monthBounds(0);
+  $('#monthLbl').textContent = fM.format(pISO(a)).replace(/\s?\d+$/, '') + ' ' + pISO(a).getFullYear();
+  const bags = S.manure.filter(r => inRange(r.date, a, b) && r.direction !== 'out').reduce((s, r) => s + Number(r.bags||0), 0);
+  const bagsOut = S.manure.filter(r => inRange(r.date, a, b) && r.direction === 'out').reduce((s, r) => s + Number(r.bags||0), 0);
+  const cont = S.containers.filter(r => inRange(r.date, a, b)).reduce((s, r) => s + Number(r.count||0), 0);
+  const open = S.meds.filter(m => !okDate(m.returnDate));
+  const ws = iso(weekStart(new Date()));
+  const wk = Object.keys(TASKS).map(k => S.tasks.some(r => r.task === k && r.date >= ws && r.date <= t));
+  const soon = S.contracts.filter(c => ['warn','bad'].includes(contractStatus(c).k));
+  const A = activeProcs(); const urgent = A.filter(p => procState(p).urgent);
+  const crem = soon.map(c => { const st = contractStatus(c); return `<div class="rem-i ${st.k === 'bad' ? 'over' : 'today'}"><div class="when">${LICENSE_TYPES.includes(c.type) ? 'ترخيص' : 'عقد'}</div><div><b>${esc(c.title)}${exMark(c)}</b><small>${esc(c.party || c.type || '')} · ينتهي ${esc(fd(c.endDate))}</small></div><span class="chip ${st.k}">${esc(st.t)}</span></div>`; });
+  S.inspections.filter(i => i.status !== 'closed' && inspState(i).k !== 'good').forEach(i => { const s = inspState(i); crem.push(`<div class="rem-i ${s.k === 'bad' ? 'over' : 'today'}"><div class="when">تفتيش</div><div><b>${esc(i.note)}${exMark(i)}</b><small>مهلة التصحيح ${esc(fd(i.dueDate))}</small></div><span class="chip ${s.k}">${esc(s.t)}</span></div>`); });
+  S.stock.filter(s => stockState(s).k !== 'good' && !s.disposalProcId).forEach(s => { const st = stockState(s); crem.push(`<div class="rem-i ${st.k === 'bad' ? 'over' : 'today'}"><div class="when">مخزون</div><div><b>${esc(s.name)}${exMark(s)}</b><small>${esc(s.kind || '')} · ينتهي ${esc(fd(s.expiry))}</small></div><a class="chip ${st.k}" href="#meds">${esc(st.t)}</a></div>`); });
+  $('#homeRem').innerHTML = (urgent.length || crem.length)
+    ? urgent.map(remItem).join('') + crem.join('')
+    : (A.length ? `<small>ما فيه شيء مستعجل. أقرب المواعيد:</small>` + A.slice(0, 3).map(remItem).join('') : empty('ما فيه مواعيد مجدولة. أضف مواعيد شركة النفايات وإخراج السبلة من <a href="#procedures">الإجراءات البيئية</a>.'));
+  $('#homeKpis').innerHTML = [
+    kpi('c-manure', 'أكياس سبلة للمستودع', N(bags), bagsOut ? `وخرج من المستودع ${N(bagsOut)} كيس` : 'كيس هذا الشهر'),
+    kpi('c-cont', 'عبوات خطرة مُخرجة', N(cont), 'عبوة هذا الشهر'),
+    kpi('c-meds', 'عبوات أدوية لم ترجع', N(open.length), open.length ? open.slice(0,2).map(m => m.name).join('، ') : 'كل العبوات راجعة', open.length > 0),
+    kpi('c-tasks', 'نظافة هذا الأسبوع', `${wk.filter(Boolean).length}/2`, Object.keys(TASKS).map((k,i) => (wk[i] ? '✓ ' : '✗ ') + TASKS[k]).join(' · '), wk.some(x => !x) && new Date().getDay() >= 4),
+    kpi('c-contracts', 'عقود وتراخيص تحتاج تجديد', N(soon.length), soon.length ? soon.map(c => c.title).slice(0,2).join('، ') : `${N(S.contracts.length)} مسجل`, soon.length > 0),
+    kpi('c-dead', 'النافق هذا الشهر', N(S.mortality.filter(r => inRange(r.date, a, b)).reduce((s, r) => s + Number(r.count||0), 0)), 'طائر'),
+  ].join('');
+  const items = [
+    ...S.manure.map(r => ({d:r.date, c:'c-manure', t:`${N(r.bags)} كيس سبلة ${r.direction === 'out' ? 'خرجت من المستودع' : 'إلى المستودع'}${r.barn ? ' — ' + r.barn : ''}`, ex:r.example, u:r.uid, ts:r})),
+    ...S.containers.map(r => ({d:r.date, c:'c-cont', t:`إخراج ${N(r.count)} عبوة خطرة${r.kind ? ' (' + r.kind + ')' : ''}`, ex:r.example, u:r.uid, ts:r})),
+    ...S.meds.filter(r => okDate(r.outDate)).map(r => ({d:r.outDate, c:'c-meds', t:`إخراج دواء ${r.name}${r.qty ? ' — ' + r.qty : ''}`, ex:r.example, u:r.uid, ts:r})),
+    ...S.meds.filter(r => okDate(r.returnDate)).map(r => ({d:r.returnDate, c:'c-meds', t:`رجوع العبوة الفارغة: ${r.name}`, ex:r.example})),
+    ...S.tasks.map(r => ({d:r.date, c:'c-tasks', t:`${TASKS_ALL[r.task] || r.task}${r.by ? ' — ' + r.by : ''}`, ex:r.example, u:r.uid, ts:r})),
+    ...S.procedures.flatMap(p => (p.history || []).map(h => ({d:h.done, c:'c-proc', t:`تنفيذ إجراء: ${p.title}`, ex:p.example, u:h.uid}))),
+    ...S.mortality.map(r => ({d:r.date, c:'c-dead', t:`نافق ${N(r.count)} طائر${r.barn ? ' — ' + r.barn : ''} (${r.method || ''})`, ex:r.example, u:r.uid, ts:r})),
+    ...S.inspections.map(i => ({d:i.date, c:'c-insp', t:`ملاحظة تفتيش: ${i.note}`, ex:i.example, u:i.uid})),
+    ...S.inspections.filter(i => okDate(i.closedDate)).map(i => ({d:i.closedDate, c:'c-insp', t:`انحلّت ملاحظة: ${i.note}`, ex:i.example, u:i.closedBy})),
+  ].filter(i => okDate(i.d)).sort((x, y) => y.d.localeCompare(x.d)).slice(0, 12);
+  $('#homeTl').innerHTML = items.length ? items.map(i => `<div class="tl-i"><i class="dot ${i.c}"></i><div>${esc(i.t)}${i.ex ? '<span class="ex">مثال</span>' : ''}${nameOf(i.u) ? `<span class="d2">${esc(nameOf(i.u))}</span>` : ''}</div><span class="t">${i.d === today() ? 'اليوم' + (tm(i.ts) ? ' ' + esc(tm(i.ts)) : '') : esc(fd(i.d))}</span></div>`).join('')
+    : empty('ما فيه حركات مسجلة بعد. ابدأ بالميكروفون فوق أو من أقسام القائمة.');
+}
+function kpi(c, lbl, val, sub, alert) {
+  return `<div class="kpi${alert ? ' alert' : ''}"><span class="lbl"><i class="dot ${c}"></i>${esc(lbl)}</span><span class="val">${esc(val)}</span><span class="sub">${esc(sub)}</span></div>`;
+}
+
+function manureRows(list) {
+  return list.slice().sort(byDate('date')).map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td>${esc(DIR[r.direction] || DIR.to_store)}${exMark(r)}</td><td>${esc(r.barn || '—')}</td><td class="n">${N(r.bags)}</td><td class="wrap">${esc(r.note || '')}</td><td>${rcptCell('manure', r)}</td><td>${delBtn('manure', r.id)}</td></tr>`);
+}
+function renderManure() {
+  const L = S.manure;
+  const inS = L.filter(r => r.direction !== 'out').reduce((s, r) => s + Number(r.bags||0), 0);
+  const out = L.filter(r => r.direction === 'out').reduce((s, r) => s + Number(r.bags||0), 0);
+  const last = L.slice().sort(byDate('date')).find(r => r.direction !== 'out');
+  $('#manureKpis').innerHTML = kpi('c-manure','إجمالي ما دخل المستودع', N(inS), 'كيس') + kpi('c-manure','خرج من المستودع', N(out), 'كيس') + kpi('c-manure','المتبقي تقديرًا في المستودع', N(Math.max(0, inS - out)), 'كيس') + kpi('c-manure','آخر إخراج من العنابر', last ? fd(last.date) : '—', last ? `${N(last.bags)} كيس` : '');
+  $('#manureTbl').innerHTML = table([{t:'التاريخ'},{t:'الحركة'},{t:'العنبر'},{t:'الأكياس',n:1},{t:'ملاحظة'},{t:'السند'},{t:''}], manureRows(L)) || empty('ما فيه إخراج سبلة مسجل. سجّل أول إخراج من النموذج فوق.');
+}
+
+function contRows(list) {
+  return list.slice().sort(byDate('date')).map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td class="n">${N(r.count)}</td><td>${esc(r.kind || '—')}${exMark(r)}</td><td class="wrap">${esc(r.note || '')}</td><td>${rcptCell('containers', r)}</td><td>${delBtn('containers', r.id)}</td></tr>`);
+}
+function renderCont() {
+  const L = S.containers; const tot = L.reduce((s, r) => s + Number(r.count||0), 0);
+  const [a, b] = monthBounds(0); const m = L.filter(r => inRange(r.date, a, b)).reduce((s, r) => s + Number(r.count||0), 0);
+  const last = L.slice().sort(byDate('date'))[0];
+  $('#contKpis').innerHTML = kpi('c-cont','الإجمالي', N(tot), 'عبوة') + kpi('c-cont','هذا الشهر', N(m), 'عبوة') + kpi('c-cont','آخر إخراج', last ? fd(last.date) : '—', last ? `${N(last.count)} عبوة` : '');
+  $('#contTbl').innerHTML = table([{t:'التاريخ'},{t:'العدد',n:1},{t:'النوع'},{t:'ملاحظة'},{t:'السند'},{t:''}], contRows(L)) || empty('ما فيه عبوات مسجلة. سجّل أول إخراج من النموذج فوق.');
+}
+
+function medStatus(m) {
+  if (okDate(m.returnDate)) return `<span class="chip good">رجعت ${esc(fd(m.returnDate))}</span>`;
+  if (!okDate(m.outDate)) return `<span class="chip mute">بدون تاريخ إخراج</span>`;
+  const d = Math.round((pISO(today()) - pISO(m.outDate)) / 864e5);
+  return `<span class="chip ${d > 14 ? 'bad' : 'warn'}">لم ترجع · ${N(d)} يوم</span>`;
+}
+function medRows(list, withReturn) {
+  return list.slice().sort(byDate('outDate')).map(r => `<tr><td><b>${esc(r.name)}</b>${exMark(r)}</td><td>${dateCell(r.outDate)}</td><td>${esc(r.qty || '—')}</td><td>${medStatus(r)}</td>${withReturn ? `<td><div class="row" style="flex-wrap:nowrap"><input type="date" value="${today()}" data-retdate="${esc(r.id)}" style="width:150px;padding:5px 8px" aria-label="تاريخ رجوع العبوة"><button class="btn sm pri" type="button" data-ret="${esc(r.id)}">رجعت العبوة</button></div></td>` : `<td class="wrap">${esc(r.note || '')}</td>`}<td>${delBtn('meds', r.id)}</td></tr>`);
+}
+function renderMeds() {
+  const L = S.meds; const open = L.filter(m => !okDate(m.returnDate));
+  const late = open.filter(m => okDate(m.outDate) && (pISO(today()) - pISO(m.outDate)) / 864e5 > 14);
+  $('#medKpis').innerHTML = kpi('c-meds','أدوية مُخرجة', N(L.length), 'سجل') + kpi('c-meds','عبوات راجعة', N(L.length - open.length), 'عبوة فارغة') + kpi('c-meds','لم ترجع', N(open.length), late.length ? `${N(late.length)} منها أكثر من ١٤ يوم` : 'عبوة', late.length > 0);
+  $('#medOpen').innerHTML = table([{t:'الدواء'},{t:'تاريخ الإخراج'},{t:'الكمية'},{t:'الحالة'},{t:'تسجيل الرجوع'},{t:''}], medRows(open, true)) || empty('كل عبوات الأدوية راجعة.');
+  $('#medTbl').innerHTML = table([{t:'الدواء'},{t:'تاريخ الإخراج'},{t:'الكمية'},{t:'الحالة'},{t:'ملاحظة'},{t:''}], medRows(L, false)) || empty('ما فيه أدوية مسجلة. سجّل أول دواء من النموذج فوق.');
+}
+
+function weeksData(n, endDate) {
+  const out = []; let w = weekStart(endDate || new Date());
+  for (let i = 0; i < n; i++) {
+    const a = iso(w); const e = new Date(w); e.setDate(e.getDate() + 6); const b = iso(e);
+    const done = {}; Object.keys(TASKS).forEach(k => done[k] = S.tasks.filter(r => r.task === k && inRange(r.date, a, b)).sort(byDate('date'))[0] || null);
+    out.push({a, b, done}); w = new Date(w); w.setDate(w.getDate() - 7);
+  }
+  return out;
+}
+function renderTasks() {
+  const W = weeksData(10); const t = today();
+  let score = 0; W.forEach(w => Object.values(w.done).forEach(x => x && score++));
+  $('#weeksScore').textContent = `الالتزام: ${N(Math.round(score / (W.length * 2) * 100))}%`;
+  $('#weeksGrid').innerHTML = `<div class="weeks"><div class="wh">الأسبوع</div><div class="wh">${TASKS.farm_clean}</div><div class="wh">${TASKS.water_clean}</div>` +
+    W.map((w, i) => { const cur = i === 0 ? ' cur' : '';
+      return `<div class="${cur}"><span>${esc(fGs.format(pISO(w.a)))} – ${esc(fGs.format(pISO(w.b)))}</span>${i === 0 ? '<span class="chip mute">الحالي</span>' : ''}</div>` +
+        Object.keys(TASKS).map(k => `<div class="${cur}">${w.done[k] ? `<span class="chip good">✓ ${esc(fw(w.done[k].date))}</span>` : (i === 0 ? '<span class="chip warn">بانتظار التنفيذ</span>' : '<span class="chip bad">لم تُسجّل</span>')}</div>`).join('');
+    }).join('') + '</div>';
+  const rows = S.tasks.slice().sort(byDate('date')).map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td>${esc(TASKS_ALL[r.task] || r.task)}${exMark(r)}</td><td>${esc(r.by || '—')}</td><td class="wrap">${esc(r.note || '')}</td><td>${rcptCell('tasks', r)}</td><td>${delBtn('tasks', r.id)}</td></tr>`);
+  $('#taskTbl').innerHTML = table([{t:'التاريخ'},{t:'النوع'},{t:'نفّذها'},{t:'ملاحظة'},{t:'الصور'},{t:''}], rows) || empty('ما فيه نظافة مسجلة بعد. اضغط زر من الأزرار فوق لتسجيل نظافة اليوم.');
+  const [ma, mb] = monthBounds(0); const M = S.tasks.filter(r => inRange(r.date, ma, mb));
+  $('#cleanKpis').innerHTML = Object.entries(TASKS_ALL).map(([k, v]) => { const last = S.tasks.filter(r => r.task === k).sort(byDate('date'))[0];
+    const days = last ? Math.round((pISO(today()) - pISO(last.date)) / 864e5) : null;
+    return kpi('c-tasks', v, N(M.filter(r => r.task === k).length), last ? `مرة هذا الشهر · آخر مرة ${days === 0 ? 'اليوم' : 'قبل ' + N(days) + ' يوم'}` : 'ما انسجلت أبدًا', TASKS[k] && (days == null || days > 7)); }).join('');
+  $('#quickClean').innerHTML = Object.entries(TASKS_ALL).map(([k, v]) => { const done = S.tasks.some(r => r.task === k && r.date === today());
+    return `<button class="btn${done ? '' : ' pri'}" type="button" data-qclean="${k}"${done ? ' disabled' : ''}>${done ? '✓ ' : ''}${esc(v)}</button>`; }).join('');
+}
+
+function renderContracts() {
+  const L = S.contracts.slice().sort((a, b) => String(a.endDate || '9').localeCompare(String(b.endDate || '9')));
+  $('#contractList').innerHTML = L.length ? L.map(c => { const st = contractStatus(c);
+    const files = thumbs(c.files, true);
+    const isLic = LICENSE_TYPES.includes(c.type);
+    const cal = !mcp || c.example || !okDate(c.endDate) ? '' : (c.calEventId || c.calDue === c.endDate ? '<span class="chip good">✓ تذكير الانتهاء في التقويم</span>' : `<button class="btn sm" type="button" data-ccal="${esc(c.id)}">ذكّرني بالانتهاء في التقويم</button>`);
+    return `<article class="ccard"><div class="card-h" style="margin:0"><span class="tag"><i class="dot c-contracts"></i>${isLic ? 'ترخيص / شهادة' : 'عقد'}</span><span class="chip ${st.k}">${esc(st.t)}</span></div>
+      <h3>${esc(c.title)}${exMark(c)}</h3>
+      <dl><dt>النوع</dt><dd>${esc(c.type || '—')}</dd><dt>${isLic ? 'الجهة المصدرة' : 'الطرف الثاني'}</dt><dd>${esc(c.party || '—')}</dd><dt>الرقم</dt><dd class="num">${esc(c.number || '—')}</dd><dt>البداية</dt><dd>${esc(fd(c.startDate))}</dd><dt>الانتهاء</dt><dd>${esc(fd(c.endDate))}</dd>${c.note ? `<dt>ملاحظة</dt><dd>${esc(c.note)}</dd>` : ''}</dl>
+      <div class="thumbs" style="align-items:center">${files || '<small>ما فيه مرفقات</small>'}</div>
+      ${db ? `<button class="btn sm" type="button" data-attach="contracts:${esc(c.id)}" style="align-self:flex-start">📎 أرفق صور أو PDF</button>` : ''}
+      ${cal}
+      <div class="row" style="justify-content:flex-end">${delBtn('contracts', c.id)}</div></article>`; }).join('')
+    : `<div class="card">${empty('ما فيه عقود أو تراخيص محفوظة. أضف التصريح البيئي وعقد الالتزام البيئي وارفع صورها من النموذج فوق.')}</div>`;
+}
+
+/* ---------- mortality ---------- */
+function deadRows(list) {
+  return list.slice().sort(byDate('date')).map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td class="n">${N(r.count)}</td><td>${esc(r.barn || '—')}${exMark(r)}</td><td>${esc(r.method || '—')}</td><td class="wrap">${esc([r.cause, r.note].filter(Boolean).join(' · '))}</td><td>${rcptCell('mortality', r)}</td><td>${delBtn('mortality', r.id)}</td></tr>`);
+}
+function renderDead() {
+  const L = S.mortality; const [a, b] = monthBounds(0); const [pa, pb] = monthBounds(-1);
+  const sumR = l => l.reduce((s, r) => s + Number(r.count||0), 0);
+  const m = sumR(L.filter(r => inRange(r.date, a, b))), pm = sumR(L.filter(r => inRange(r.date, pa, pb)));
+  const d30 = new Date(); d30.setDate(d30.getDate() - 29); const l30 = sumR(L.filter(r => inRange(r.date, iso(d30), today())));
+  const noR = L.filter(r => needsRcpt('mortality', r) && !(r.receipts || []).length).length;
+  $('#deadKpis').innerHTML = kpi('c-dead','هذا الشهر', N(m), pm ? `الشهر الماضي ${N(pm)}` : 'طائر') + kpi('c-dead','آخر ٣٠ يوم', N(l30), `متوسط ${(l30 / 30).toFixed(1)} باليوم`) + kpi('c-dead','الإجمالي المسجل', N(sumR(L)), 'طائر') + kpi('c-dead','تسليم بدون سند', N(noR), noR ? 'أرفق سند الاستلام' : 'كل التسليمات موثقة', noR > 0);
+  $('#deadTbl').innerHTML = table([{t:'التاريخ'},{t:'العدد',n:1},{t:'العنبر'},{t:'طريقة التخلص'},{t:'السبب / ملاحظة'},{t:'السند'},{t:''}], deadRows(L)) || empty('ما فيه نافق مسجل. سجّل أول حالة من النموذج فوق.');
+}
+
+/* ---------- inspections ---------- */
+function inspState(i) {
+  if (i.status === 'closed') return {k:'good', t: okDate(i.closedDate) ? `انحلّت ${fd(i.closedDate)}` : 'انحلّت'};
+  if (!okDate(i.dueDate)) return {k:'warn', t:'مفتوحة بدون مهلة'};
+  const d = Math.round((pISO(i.dueDate) - pISO(today())) / 864e5);
+  if (d < 0) return {k:'bad', t:`تجاوزت المهلة بـ ${N(-d)} يوم`};
+  if (d <= 7) return {k:'warn', t: d === 0 ? 'المهلة اليوم' : `باقي ${N(d)} يوم`};
+  return {k:'good', t:`باقي ${N(d)} يوم`};
+}
+function renderInsp() {
+  const O = S.inspections.filter(i => i.status !== 'closed').sort((a, b) => String(a.dueDate || '9').localeCompare(String(b.dueDate || '9')));
+  const D = S.inspections.filter(i => i.status === 'closed').sort(byDate('closedDate'));
+  const late = O.filter(i => inspState(i).k === 'bad').length;
+  const onTime = D.filter(i => !okDate(i.dueDate) || !okDate(i.closedDate) || i.closedDate <= i.dueDate).length;
+  $('#inspKpis').innerHTML = kpi('c-insp','مفتوحة', N(O.length), 'ملاحظة', O.length > 0) + kpi('c-insp','تجاوزت المهلة', N(late), 'ملاحظة', late > 0) + kpi('c-insp','انحلّت', N(D.length), D.length ? `${N(onTime)} منها داخل المهلة` : 'ملاحظة');
+  $('#inspOpen').innerHTML = O.length ? O.map(i => { const s = inspState(i);
+    const cal = !mcp || i.example || !okDate(i.dueDate) ? '' : (i.calEventId || i.calDue === i.dueDate ? '<span class="chip good" style="align-self:flex-start">✓ المهلة في التقويم</span>' : `<button class="btn sm" type="button" data-ical="${esc(i.id)}" style="align-self:flex-start">أضف المهلة للتقويم</button>`);
+    return `<article class="ccard"${s.k === 'bad' ? ' style="border-color:color-mix(in srgb,var(--bad) 45%,var(--line))"' : ''}>
+      <div class="card-h" style="margin:0"><span class="tag"><i class="dot c-insp"></i>${esc(fd(i.date))}</span><span class="chip ${s.k}">${esc(s.t)}</span></div>
+      <h3>${esc(i.note)}${exMark(i)}</h3>
+      <dl><dt>الجهة</dt><dd>${esc(i.authority || '—')}</dd><dt>المهلة</dt><dd>${esc(fd(i.dueDate))}</dd>${nameOf(i.uid) ? `<dt>سجّلها</dt><dd>${esc(nameOf(i.uid))}</dd>` : ''}</dl>
+      <div><small>الصور (قبل وبعد التصحيح)</small>${rcptCell('inspections', i)}</div>
+      ${cal}
+      <div class="row" style="flex-wrap:nowrap"><input type="date" value="${today()}" data-idate="${esc(i.id)}" style="width:150px;padding:5px 8px" aria-label="تاريخ التصحيح"><button class="btn sm pri" type="button" data-iclose="${esc(i.id)}">تم التصحيح</button></div>
+      <div class="row" style="justify-content:flex-end">${delBtn('inspections', i.id)}</div></article>`; }).join('')
+    : empty('ما فيه ملاحظات مفتوحة.');
+  $('#inspDoneWrap').hidden = !D.length;
+  $('#inspDone').innerHTML = table([{t:'تاريخ الزيارة'},{t:'الملاحظة'},{t:'المهلة'},{t:'تاريخ التصحيح'},{t:'الصور'},{t:''}], D.map(i => `<tr><td>${esc(fd(i.date))}</td><td class="wrap">${esc(i.note)}${exMark(i)}</td><td>${esc(fd(i.dueDate))}</td><td>${esc(fd(i.closedDate))}${okDate(i.dueDate) && i.closedDate > i.dueDate ? ' <span class="chip warn">بعد المهلة</span>' : ''}${nameOf(i.closedBy) ? `<span class="d2">${esc(nameOf(i.closedBy))}</span>` : ''}</td><td>${rcptCell('inspections', i)}</td><td>${delBtn('inspections', i.id)}</td></tr>`));
+}
+
+/* ---------- stock ---------- */
+function stockState(s) {
+  if (!okDate(s.expiry)) return {k:'good', t:'بدون تاريخ انتهاء'};
+  const d = Math.round((pISO(s.expiry) - pISO(today())) / 864e5);
+  if (d < 0) return {k:'bad', t:`منتهي من ${N(-d)} يوم`};
+  if (d <= 30) return {k:'warn', t:`ينتهي خلال ${N(d)} يوم`};
+  return {k:'good', t:`صالح لين ${fd(s.expiry)}`};
+}
+function renderStock() {
+  const L = S.stock.slice().sort((a, b) => String(a.expiry || '9').localeCompare(String(b.expiry || '9')));
+  const bad = L.filter(s => stockState(s).k === 'bad').length, warn = L.filter(s => stockState(s).k === 'warn').length;
+  $('#stockMsg').textContent = L.length ? `${N(L.length)} صنف · ${N(bad)} منتهي · ${N(warn)} قريب الانتهاء` : '';
+  $('#stockTbl').innerHTML = table([{t:'الصنف'},{t:'النوع'},{t:'الكمية'},{t:'الصلاحية'},{t:'الإجراء'},{t:''}], L.map(s => { const st = stockState(s);
+    const act = st.k === 'good' ? '—' : (s.disposalProcId ? '<span class="chip mute">مجدول للاستلام</span>' : `<button class="btn sm" type="button" data-sdisp="${esc(s.id)}">جدول استلامه للإتلاف</button>`);
+    return `<tr><td><b>${esc(s.name)}</b>${exMark(s)}${s.note ? `<span class="d2">${esc(s.note)}</span>` : ''}</td><td>${esc(s.kind || '—')}</td><td><span class="qty"><button class="btn sm ghost" type="button" data-sq="${esc(s.id)}:-1" aria-label="نقص واحد">−</button><b>${esc(String(s.qty ?? 0))}</b><button class="btn sm ghost" type="button" data-sq="${esc(s.id)}:1" aria-label="زيادة واحد">+</button></span> <small>${esc(s.unit || '')}</small></td><td><span class="chip ${st.k}">${esc(st.t)}</span></td><td>${act}</td><td>${delBtn('stock', s.id)}</td></tr>`; })) || empty('ما فيه أصناف في المخزون. أضف الأدوية والمطهرات مع تاريخ انتهائها عشان تجيك التنبيهات.');
+}
+
+/* ---------- inspection file ---------- */
+function kitRange() {
+  const v = ($('#kitPeriod') || {}).value || '90';
+  if (v === 'all') { const all = [...S.manure.map(r => r.date), ...S.containers.map(r => r.date), ...S.meds.map(r => r.outDate), ...S.tasks.map(r => r.date), ...S.mortality.map(r => r.date), ...S.inspections.map(r => r.date), ...S.procedures.flatMap(p => (p.history || []).map(h => h.done))].filter(okDate).sort(); return [all[0] || today(), today()]; }
+  if (v === 'month') return monthBounds(0);
+  if (v === 'last') return monthBounds(-1);
+  if (v === 'custom') { let a = $('#kf').value || today(), b = $('#kt').value || today(); if (a > b) [a, b] = [b, a]; return [a, b]; }
+  const d = new Date(); d.setDate(d.getDate() - (Number(v) - 1)); return [iso(d), today()];
+}
+const kitPeriodName = () => ($('#kitPeriod').selectedOptions[0] || {}).textContent || '';
+function renderKit() {
+  const st = S.settings || {}; const R = reportData(kitRange()); const rs = receiptStats(R); const nW = R.weeks.length || 1; const pn = kitPeriodName();
+  const ro = list => list.length ? `<div class="row" style="gap:4px;flex-wrap:nowrap">${thumbs(list)}</div>` : '—';
+  const srt = (l, f) => l.slice().sort(byDate(f));
+  $('#kitPeriodLbl').textContent = `السجلات المعروضة من ${fd(R.a)} إلى ${fd(R.b)} (${fh(R.a)} – ${fh(R.b)} هـ)`;
+  $('#kitChart').innerHTML = chartSVG(monthly(R));
+  const docs0 = S.contracts.slice().sort((a, b) => (LICENSE_TYPES.includes(b.type) - LICENSE_TYPES.includes(a.type)) || String(a.endDate || '9').localeCompare(String(b.endDate || '9')));
+  $('#kitDocs').innerHTML = docs0.length ? docs0.map(c => { const s = contractStatus(c); return `<article class="ccard"><div class="card-h" style="margin:0"><span class="tag"><i class="dot c-contracts"></i>${LICENSE_TYPES.includes(c.type) ? 'ترخيص / شهادة' : 'عقد'}</span><span class="chip ${s.k}">${esc(s.t)}</span></div><h3>${esc(c.title)}${exMark(c)}</h3>
+    <dl><dt>النوع</dt><dd>${esc(c.type || '—')}</dd><dt>الجهة</dt><dd>${esc(c.party || '—')}</dd><dt>الرقم</dt><dd class="num">${esc(c.number || '—')}</dd><dt>من</dt><dd>${esc(fd(c.startDate))}</dd><dt>إلى</dt><dd>${esc(fd(c.endDate))}</dd></dl>
+    <div class="thumbs">${thumbs(c.files, true) || '<span class="chip warn">بدون مرفقات</span>'}</div></article>`; }).join('') : empty('ما فيه عقود أو تراخيص مسجلة.');
+  $('#kitManure').innerHTML = table([{t:'التاريخ'},{t:'الحركة'},{t:'العنبر'},{t:'الأكياس',n:1},{t:'ملاحظة'},{t:'السند'}], srt(R.manure, 'date').map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td>${esc(DIR[r.direction] || DIR.to_store)}${exMark(r)}</td><td>${esc(r.barn || '—')}</td><td class="n">${N(r.bags)}</td><td class="wrap">${esc(r.note || '')}</td><td>${ro(r.receipts || [])}</td></tr>`), `<td colspan="3">الإجمالي</td><td class="n">${N(R.bagsIn + R.bagsOut)}</td><td colspan="2"></td>`) || empty(`لا يوجد في ${pn}.`);
+  $('#kitCont').innerHTML = table([{t:'التاريخ'},{t:'العدد',n:1},{t:'النوع'},{t:'ملاحظة'},{t:'السند'}], srt(R.containers, 'date').map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td class="n">${N(r.count)}</td><td>${esc(r.kind || '—')}${exMark(r)}</td><td class="wrap">${esc(r.note || '')}</td><td>${ro(r.receipts || [])}</td></tr>`), `<td>الإجمالي</td><td class="n">${N(R.cont)}</td><td colspan="3"></td>`) || empty(`لا يوجد في ${pn}.`);
+  $('#kitMeds').innerHTML = table([{t:'الدواء'},{t:'تاريخ الإخراج'},{t:'الكمية'},{t:'رجوع العبوة الفارغة'}], srt(R.meds, 'outDate').map(r => `<tr><td><b>${esc(r.name)}</b>${exMark(r)}${byTag(r)}</td><td>${esc(fd(r.outDate))}</td><td>${esc(r.qty || '—')}</td><td>${medStatus(r)}</td></tr>`)) || empty(`لا يوجد في ${pn}.`);
+  $('#kitStock').innerHTML = table([{t:'الصنف'},{t:'النوع'},{t:'الكمية'},{t:'الصلاحية'}], S.stock.slice().sort((a, b) => String(a.expiry || '9').localeCompare(String(b.expiry || '9'))).map(s => { const x = stockState(s); return `<tr><td><b>${esc(s.name)}</b>${exMark(s)}</td><td>${esc(s.kind || '—')}</td><td>${esc(String(s.qty ?? 0))} ${esc(s.unit || '')}</td><td><span class="chip ${x.k}">${esc(x.t)}</span>${s.disposalProcId ? ' <span class="chip mute">مجدول للاستلام</span>' : ''}</td></tr>`; })) || empty('ما فيه أصناف مسجلة في المخزون.');
+  $('#kitDead').innerHTML = table([{t:'التاريخ'},{t:'العدد',n:1},{t:'العنبر'},{t:'طريقة التخلص'},{t:'السبب / ملاحظة'},{t:'السند'}], srt(R.mortality, 'date').map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td class="n">${N(r.count)}</td><td>${esc(r.barn || '—')}${exMark(r)}</td><td>${esc(r.method || '—')}</td><td class="wrap">${esc([r.cause, r.note].filter(Boolean).join(' · '))}</td><td>${ro(r.receipts || [])}</td></tr>`), `<td>الإجمالي</td><td class="n">${N(R.dead)}</td><td colspan="4"></td>`) || empty(`لا يوجد نافق في ${pn}.`);
+  $('#kitWeeks').innerHTML = table([{t:'الأسبوع'},{t:TASKS.farm_clean},{t:TASKS.water_clean}], R.weeks.map(w => `<tr><td>${esc(fGs.format(pISO(w.a)))} – ${esc(fGs.format(pISO(w.b)))}</td>${Object.keys(TASKS).map(k => `<td>${w.done[k] ? '<span class="chip good">✓ نُفذت</span>' : '<span class="chip bad">لم تُسجّل</span>'}</td>`).join('')}</tr>`));
+  $('#kitClean').innerHTML = table([{t:'التاريخ'},{t:'النوع'},{t:'نفّذها'},{t:'ملاحظة'},{t:'الصور'}], srt(R.tasks, 'date').map(r => `<tr><td>${dateCell(r.date)}${byTag(r)}</td><td>${esc(TASKS_ALL[r.task] || r.task)}${exMark(r)}</td><td>${esc(r.by || '—')}</td><td class="wrap">${esc(r.note || '')}</td><td>${ro(r.receipts || [])}</td></tr>`)) || empty(`ما فيه نظافة مسجلة في ${pn}.`);
+  $('#kitProcDone').innerHTML = table([{t:'الإجراء'},{t:'الجهة'},{t:'الموعد'},{t:'تاريخ التنفيذ'},{t:'الحالة'},{t:'السند'}], R.procs.slice().reverse().map(x => `<tr><td><b>${esc(x.title)}</b>${exMark(x)}<span class="d2">${esc(x.category || '')}</span></td><td>${esc(x.party || '—')}</td><td>${esc(fd(x.due))}</td><td>${esc(fd(x.done))}</td><td>${x.late ? '<span class="chip warn">بعد الموعد</span>' : '<span class="chip good">في موعده</span>'}</td><td>${ro(x.receipts || [])}</td></tr>`)) || empty(`ما فيه إجراءات منفذة في ${pn}.`);
+  $('#kitName').textContent = st.name || BRAND;
+  $('#kitMeta').textContent = [st.owner && 'المسؤول: ' + st.owner, st.permit && 'رقم السجل/الترخيص: ' + st.permit, st.location].filter(Boolean).join(' · ') || 'أكمل بيانات المزرعة من أسفل الصفحة الرئيسية';
+  const docs = S.contracts.slice().sort((a, b) => (LICENSE_TYPES.includes(b.type) - LICENSE_TYPES.includes(a.type)) || String(a.endDate || '9').localeCompare(String(b.endDate || '9')));
+  const docBad = docs.filter(c => contractStatus(c).k === 'bad').length;
+  $('#kitKpis').innerHTML = kpi('c-contracts','تراخيص وعقود سارية', `${N(docs.length - docBad)}/${N(docs.length)}`, docBad ? `${N(docBad)} منتهية` : 'كلها سارية', docBad > 0) +
+    kpi('c-insp','ملاحظات تفتيش مفتوحة', N(S.inspections.filter(i => i.status !== 'closed').length), 'ملاحظة', S.inspections.some(i => i.status !== 'closed' && inspState(i).k === 'bad')) +
+    kpi('c-proc','إجراءات منفذة', N(R.procs.length), R.procLate ? `${N(R.procLate)} بعد موعدها` : 'كلها في موعدها') +
+    kpi('c-tasks','الالتزام بالنظافة', `${N(Math.round((R.farmW + R.waterW) / (nW * 2) * 100))}%`, `${N(nW)} أسبوع`) +
+    kpi('c-cont','حركات موثقة بسند', rs.need ? `${N(rs.has)}/${N(rs.need)}` : '—', pn, rs.need > rs.has) +
+    kpi('c-manure','سبلة', N(R.bagsIn), `كيس للمستودع · ${N(R.bagsOut)} خرج`) +
+    kpi('c-cont','عبوات خطرة', N(R.cont), 'عبوة') +
+    kpi('c-dead','النافق', N(R.dead), 'طائر');
+  const I = S.inspections.slice().sort((a, b) => (a.status === 'closed') - (b.status === 'closed') || String(b.date).localeCompare(String(a.date)));
+  $('#kitInsp').innerHTML = table([{t:'الملاحظة'},{t:'تاريخ الزيارة'},{t:'المهلة'},{t:'الحالة'},{t:'الصور'}], I.map(i => { const s = inspState(i); return `<tr><td class="wrap">${esc(i.note)}${exMark(i)}<span class="d2">${esc(i.authority || '')}</span></td><td>${esc(fd(i.date))}</td><td>${esc(fd(i.dueDate))}</td><td><span class="chip ${s.k}">${esc(s.t)}</span></td><td>${ro(i.receipts || [])}</td></tr>`; })) || empty('ما فيه ملاحظات تفتيش مسجلة.');
+  const A = activeProcs().slice(0, 6);
+  $('#kitProc').innerHTML = A.length ? A.map(remItem).join('') : empty('ما فيه إجراءات مجدولة.');
+  const miss = [
+    ...R.manure.filter(r => needsRcpt('manure', r) && !(r.receipts || []).length).map(r => ['خروج سبلة', r.date, `${N(r.bags)} كيس`]),
+    ...R.containers.filter(r => !(r.receipts || []).length).map(r => ['عبوات خطرة', r.date, `${N(r.count)} عبوة`]),
+    ...R.mortality.filter(r => needsRcpt('mortality', r) && !(r.receipts || []).length).map(r => ['تسليم نافق', r.date, `${N(r.count)} طائر`]),
+    ...R.procs.filter(x => !(x.receipts || []).length).map(x => ['إجراء بيئي', x.done, x.title]),
+  ].sort((x, y) => String(y[1]).localeCompare(String(x[1])));
+  $('#kitRcpt').innerHTML = (rs.need ? `<p style="margin:0 0 10px">${N(rs.has)} من ${N(rs.need)} حركة في ${esc(pn)} لها سند مرفق.</p>` : '') +
+    (miss.length ? table([{t:'الحركة'},{t:'التاريخ'},{t:'التفاصيل'}], miss.map(m => `<tr><td>${esc(m[0])}</td><td>${esc(fd(m[1]))}</td><td><span class="chip warn">بدون سند</span> ${esc(m[2])}</td></tr>`)) : empty(`كل الحركات في ${pn} موثقة بسند.`));
+}
+
+/* ---------- reports ---------- */
+function rangeNow() {
+  const v = $('#r_range').value, d = new Date(), t = today();
+  let a, b = t;
+  if (v === 'month') [a, b] = monthBounds(0);
+  else if (v === 'last') [a, b] = monthBounds(-1);
+  else if (v === 'q') a = iso(new Date(d.getFullYear(), d.getMonth() - 2, 1));
+  else if (v === 'year') a = `${d.getFullYear()}-01-01`;
+  else if (v === 'all') { const all = [...S.manure.map(r => r.date), ...S.containers.map(r => r.date), ...S.meds.map(r => r.outDate), ...S.tasks.map(r => r.date)].filter(okDate).sort(); a = all[0] || t; b = all.length && all[all.length-1] > t ? all[all.length-1] : t; }
+  else { a = $('#r_from').value || t; b = $('#r_to').value || t; }
+  if (v !== 'custom') { $('#r_from').value = a; $('#r_to').value = b; }
+  if (a > b) [a, b] = [b, a];
+  return [a, b];
+}
+function reportData(range) {
+  const [a, b] = range || rangeNow();
+  const mortality = S.mortality.filter(r => inRange(r.date, a, b));
+  const insp = S.inspections.filter(i => inRange(i.date, a, b) || inRange(i.closedDate, a, b) || (i.status !== 'closed' && i.date <= b)).sort((x, y) => String(x.date).localeCompare(String(y.date)));
+  const manure = S.manure.filter(r => inRange(r.date, a, b));
+  const containers = S.containers.filter(r => inRange(r.date, a, b));
+  const meds = S.meds.filter(r => inRange(r.outDate, a, b) || inRange(r.returnDate, a, b));
+  const tasks = S.tasks.filter(r => inRange(r.date, a, b));
+  const weeks = []; let w = weekStart(pISO(b));
+  while (iso(w) >= iso(weekStart(pISO(a))) && weeks.length < 60) {
+    const wa = iso(w); const e = new Date(w); e.setDate(e.getDate() + 6); const wb = iso(e);
+    const done = {}; Object.keys(TASKS).forEach(k => done[k] = S.tasks.some(r => r.task === k && inRange(r.date, wa, wb)));
+    weeks.push({a: wa, b: wb, done}); w = new Date(w); w.setDate(w.getDate() - 7);
+  }
+  const sum = (l, f) => l.reduce((s, r) => s + Number(r[f]||0), 0);
+  const procs = S.procedures.flatMap(p => (p.history || []).filter(h => inRange(h.done, a, b)).map(h => ({title: p.title, category: p.category, party: p.party, due: h.due, done: h.done, receipts: h.receipts, uid: h.uid, late: okDate(h.due) && h.done > h.due, example: p.example})))
+    .sort((x, y) => x.done.localeCompare(y.done));
+  return { a, b, manure, containers, meds, tasks, weeks, procs, procLate: procs.filter(x => x.late).length, mortality, insp,
+    dead: sum(mortality, 'count'), inspOpen: insp.filter(i => i.status !== 'closed').length,
+    bagsIn: sum(manure.filter(r => r.direction !== 'out'), 'bags'), bagsOut: sum(manure.filter(r => r.direction === 'out'), 'bags'),
+    cont: sum(containers, 'count'), medsOut: meds.filter(r => inRange(r.outDate, a, b)).length,
+    medsRet: meds.filter(r => okDate(r.returnDate)).length, medsOpen: meds.filter(r => !okDate(r.returnDate)).length,
+    farmW: weeks.filter(x => x.done.farm_clean).length, waterW: weeks.filter(x => x.done.water_clean).length };
+}
+function monthly(R) {
+  const months = []; let d = new Date(pISO(R.a).getFullYear(), pISO(R.a).getMonth(), 1); const end = pISO(R.b);
+  while (d <= end) { months.push(iso(d).slice(0, 7)); d = new Date(d.getFullYear(), d.getMonth() + 1, 1); }
+  const ms = months.slice(-12);
+  return ms.map(m => ({ m, bags: R.manure.filter(r => r.direction !== 'out' && r.date.startsWith(m)).reduce((s, r) => s + Number(r.bags||0), 0),
+    cont: R.containers.filter(r => r.date.startsWith(m)).reduce((s, r) => s + Number(r.count||0), 0) }));
+}
+function chartSVG(data) {
+  if (!data.some(x => x.bags || x.cont)) return empty('ما فيه إخراج في هذه الفترة.');
+  const W = 640, H = 220, pad = {t:22, b:30, l:12, r:12};
+  const max = Math.max(...data.map(x => Math.max(x.bags, x.cont)), 1);
+  const nice = (() => { const p = Math.pow(10, Math.floor(Math.log10(max))); return Math.ceil(max / p) * p; })();
+  const gw = (W - pad.l - pad.r) / data.length, bw = Math.min(26, gw / 2 - 4), ih = H - pad.t - pad.b;
+  const y = v => pad.t + ih - v / nice * ih;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="الإخراج حسب الشهر">`;
+  [0, .5, 1].forEach(f => s += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y(nice*f)}" y2="${y(nice*f)}"/>`);
+  data.forEach((x, i) => {
+    const cx = W - pad.r - gw * (i + .5);  // RTL: first month on the right
+    s += `<rect class="bar" x="${cx + 2}" y="${y(x.bags)}" width="${bw}" height="${Math.max(0, ih - (y(x.bags) - pad.t))}" rx="3"/>`;
+    s += `<rect class="bar2" x="${cx - bw - 2}" y="${y(x.cont)}" width="${bw}" height="${Math.max(0, ih - (y(x.cont) - pad.t))}" rx="3"/>`;
+    if (x.bags) s += `<text class="vl" x="${cx + 2 + bw/2}" y="${y(x.bags) - 5}" text-anchor="middle">${x.bags}</text>`;
+    if (x.cont) s += `<text class="vl" x="${cx - 2 - bw/2}" y="${y(x.cont) - 5}" text-anchor="middle">${x.cont}</text>`;
+    s += `<text x="${cx}" y="${H - 10}" text-anchor="middle">${esc(fM.format(pISO(x.m + '-01')))}</text>`;
+  });
+  return s + '</svg>';
+}
+function renderReports() {
+  const R = reportData();
+  $('#rPeriod').textContent = `من ${fd(R.a)} إلى ${fd(R.b)} · الموافق ${fh(R.a)} – ${fh(R.b)} هـ`;
+  const nW = R.weeks.length || 1;
+  $('#repKpis').innerHTML = kpi('c-manure','سبلة إلى المستودع', N(R.bagsIn), `كيس · ${N(R.manure.filter(r => r.direction !== 'out').length)} مرة إخراج`) +
+    kpi('c-manure','سبلة خرجت من المستودع', N(R.bagsOut), 'كيس') +
+    kpi('c-cont','عبوات خطرة', N(R.cont), `عبوة · ${N(R.containers.length)} مرة`) +
+    kpi('c-meds','أدوية مُخرجة', N(R.medsOut), `رجع ${N(R.medsRet)} · باقي ${N(R.medsOpen)}`, R.medsOpen > 0) +
+    kpi('c-tasks','الالتزام بالنظافة', `${N(Math.round((R.farmW + R.waterW) / (nW * 2) * 100))}%`, `المزرعة ${R.farmW}/${nW} · السقايات ${R.waterW}/${nW} أسبوع`) +
+    kpi('c-proc','إجراءات بيئية منفذة', N(R.procs.length), R.procLate ? `${N(R.procLate)} منها بعد موعدها` : 'كلها في موعدها', R.procLate > 0) +
+    kpi('c-dead','النافق', N(R.dead), `طائر · ${N(R.mortality.length)} تسجيل`) +
+    kpi('c-insp','ملاحظات تفتيش مفتوحة', N(R.inspOpen), `من ${N(R.insp.length)} ملاحظة`, R.inspOpen > 0) +
+    (() => { const rs = receiptStats(R); return kpi('c-cont','حركات لها سند', rs.need ? `${N(rs.has)}/${N(rs.need)}` : '—', rs.need - rs.has ? `${N(rs.need - rs.has)} بدون سند` : 'كل الحركات موثقة', rs.need - rs.has > 0); })();
+  $('#repProc').innerHTML = table([{t:'الإجراء'},{t:'التصنيف'},{t:'الجهة'},{t:'الموعد'},{t:'تاريخ التنفيذ'},{t:'الحالة'},{t:'السند'}], R.procs.map(x => `<tr><td>${esc(x.title)}${exMark(x)}</td><td>${esc(x.category || '')}</td><td>${esc(x.party || '—')}</td><td>${esc(fd(x.due))}</td><td>${esc(fd(x.done))}${nameOf(x.uid) ? `<span class="d2">سجّله: ${esc(nameOf(x.uid))}</span>` : ''}</td><td>${x.late ? `<span class="chip warn">متأخر ${N(Math.round((pISO(x.done) - pISO(x.due)) / 864e5))} يوم</span>` : '<span class="chip good">في موعده</span>'}</td><td>${(x.receipts || []).length ? `<div class="row" style="gap:4px">${thumbs(x.receipts)}</div>` : '<span class="chip warn">بدون سند</span>'}</td></tr>`)) || empty('ما فيه إجراءات منفذة في هذه الفترة.');
+  $('#repChart').innerHTML = chartSVG(monthly(R));
+  $('#repManure').innerHTML = table([{t:'التاريخ'},{t:'الحركة'},{t:'العنبر'},{t:'الأكياس',n:1},{t:'ملاحظة'},{t:'السند'},{t:''}], manureRows(R.manure), `<td colspan="3">الإجمالي</td><td class="n">${N(R.bagsIn + R.bagsOut)}</td><td colspan="3"></td>`) || empty('لا يوجد في هذه الفترة.');
+  $('#repCont').innerHTML = table([{t:'التاريخ'},{t:'العدد',n:1},{t:'النوع'},{t:'ملاحظة'},{t:'السند'},{t:''}], contRows(R.containers), `<td>الإجمالي</td><td class="n">${N(R.cont)}</td><td colspan="4"></td>`) || empty('لا يوجد في هذه الفترة.');
+  $('#repDead').innerHTML = table([{t:'التاريخ'},{t:'العدد',n:1},{t:'العنبر'},{t:'طريقة التخلص'},{t:'ملاحظة'},{t:'السند'},{t:''}], deadRows(R.mortality), `<td>الإجمالي</td><td class="n">${N(R.dead)}</td><td colspan="5"></td>`) || empty('لا يوجد نافق مسجل في هذه الفترة.');
+  $('#repInsp').innerHTML = table([{t:'تاريخ الزيارة'},{t:'الملاحظة'},{t:'المهلة'},{t:'الحالة'}], R.insp.map(i => { const s = inspState(i); return `<tr><td>${esc(fd(i.date))}</td><td class="wrap">${esc(i.note)}${exMark(i)}</td><td>${esc(fd(i.dueDate))}</td><td><span class="chip ${s.k}">${esc(s.t)}</span></td></tr>`; })) || empty('ما فيه ملاحظات تفتيش في هذه الفترة.');
+  $('#repMeds').innerHTML = table([{t:'الدواء'},{t:'تاريخ الإخراج'},{t:'الكمية'},{t:'الحالة'},{t:'ملاحظة'},{t:''}], medRows(R.meds, false)) || empty('لا يوجد في هذه الفترة.');
+  $('#repTasks').innerHTML = table([{t:'الأسبوع'},{t:TASKS.farm_clean},{t:TASKS.water_clean}], R.weeks.map(w => `<tr><td>${esc(fGs.format(pISO(w.a)))} – ${esc(fGs.format(pISO(w.b)))}</td>${Object.keys(TASKS).map(k => `<td>${w.done[k] ? '<span class="chip good">✓ نُفذت</span>' : '<span class="chip bad">لم تُسجّل</span>'}</td>`).join('')}</tr>`)) || empty('لا يوجد.');
+  $('#repContracts').innerHTML = table([{t:'العقد'},{t:'النوع'},{t:'الطرف الثاني'},{t:'الانتهاء'},{t:'الحالة'}], S.contracts.map(c => { const st = contractStatus(c); return `<tr><td>${esc(c.title)}${exMark(c)}</td><td>${esc(c.type||'—')}</td><td>${esc(c.party||'—')}</td><td>${esc(fd(c.endDate))}</td><td><span class="chip ${st.k}">${esc(st.t)}</span></td></tr>`; })) || empty('ما فيه عقود محفوظة.');
+}
+
+function reportHTML(range) {
+  const R = reportData(range), st = S.settings || {}, now = today(), nW = R.weeks.length || 1, rs = receiptStats(R);
+  const has = r => (r.receipts || []).length ? 'مرفق' : 'غير مرفق', who = r => nameOf(r.uid) || '—';
+  const tb = (h, rows, foot) => rows.length ? `<table><thead><tr>${h.map(x => `<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody>${foot ? `<tfoot><tr>${foot}</tr></tfoot>` : ''}</table>` : '<p class="none">لا يوجد سجلات في هذه الفترة.</p>';
+  const row = cells => `<tr>${cells.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`;
+  const srt = (l, f) => l.slice().sort((a, b) => String(a[f]||'').localeCompare(String(b[f]||'')));
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>التقرير البيئي ${esc(R.a)} – ${esc(R.b)}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&family=Readex+Pro:wght@600;700&display=swap">
+<style>body{font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;color:#1b272a;margin:0;background:#fff;font-size:13px;line-height:1.6}.page{max-width:900px;margin:0 auto;padding:32px 28px}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #3a8a34;padding-bottom:14px;margin-bottom:18px;gap:20px}.idn{display:flex;align-items:center;gap:14px}.idn img{width:96px;height:auto}
+h1{font-family:"Readex Pro",sans-serif;font-size:22px;margin:0 0 4px}h2{font-family:"Readex Pro",sans-serif;font-size:15px;margin:26px 0 8px;padding-inline-start:10px;border-inline-start:4px solid var(--c)}
+.meta{font-size:12px;color:#5a686a}.meta b{color:#1b272a}.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.sum div{border:1px solid #d7ddd8;border-radius:6px;padding:8px 10px}.sum span{display:block;font-size:11px;color:#5a686a}.sum b{font-family:"Readex Pro",sans-serif;font-size:20px}
+table{width:100%;border-collapse:collapse;margin-top:4px}th,td{border:1px solid #d7ddd8;padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}th{background:#eef1ed;font-size:12px}tfoot td{font-weight:600;background:#f5f7f4}.none{color:#5a686a;font-style:italic}
+.sign{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}.sign div{border-top:1px solid #1b272a;padding-top:6px;text-align:center;font-size:12px}
+.bar{position:sticky;top:0;background:#3a8a34;color:#fff;padding:10px;text-align:center}.bar button{font:inherit;padding:6px 18px;border-radius:6px;border:0;cursor:pointer}
+@media print{.bar{display:none}.page{padding:0}h2{break-after:avoid}table{break-inside:auto}tr{break-inside:avoid}}</style></head><body>
+<div class="bar">للحفظ PDF أو الطباعة: <button onclick="window.print()">طباعة / حفظ PDF</button></div>
+<div class="page"><header><div class="idn">${logoData ? `<img src="${logoData}" alt="${esc(BRAND)}">` : ''}<div><h1>سجل المتابعة البيئية لشركة حمام البستان</h1><div class="meta"><b>${esc(st.name || BRAND)}</b>${st.location ? ' · ' + esc(st.location) : ''}<br>${st.owner ? 'المسؤول: ' + esc(st.owner) + '<br>' : ''}${st.permit ? 'رقم السجل/الترخيص: ' + esc(st.permit) : ''}</div></div></div>
+<div class="meta" style="text-align:left">الفترة: <b>${esc(fd(R.a))} – ${esc(fd(R.b))}</b><br>الموافق: ${esc(fh(R.a))} – ${esc(fh(R.b))} هـ<br>تاريخ الإصدار: ${esc(fd(now))}</div></header>
+<div class="sum"><div><span>سبلة إلى المستودع</span><b>${N(R.bagsIn)}</b> كيس</div><div><span>سبلة خرجت من المستودع</span><b>${N(R.bagsOut)}</b> كيس</div><div><span>عبوات خطرة مُخرجة</span><b>${N(R.cont)}</b> عبوة</div><div><span>أدوية: رجع / المجموع</span><b>${N(R.medsRet)}/${N(R.meds.length)}</b></div><div><span>الالتزام بالنظافة</span><b>${N(Math.round((R.farmW + R.waterW) / (nW * 2) * 100))}%</b></div><div><span>إجراءات بيئية منفذة</span><b>${N(R.procs.length)}</b> (${N(R.procLate)} متأخر)</div><div><span>النافق</span><b>${N(R.dead)}</b> طائر</div><div><span>ملاحظات تفتيش مفتوحة</span><b>${N(R.inspOpen)}</b> من ${N(R.insp.length)}</div><div><span>حركات موثقة بسند</span><b>${N(rs.has)}/${N(rs.need)}</b></div></div>
+<h2 style="--c:#8a6534">أولاً: إخراج السبلة</h2>${tb(['التاريخ','اليوم','الحركة','العنبر','عدد الأكياس','ملاحظة','السند','سجّله'], srt(R.manure,'date').map(r => row([fd(r.date), fw(r.date), DIR[r.direction] || DIR.to_store, r.barn || '—', N(r.bags), r.note || '', r.direction === 'out' ? has(r) : '—', who(r)])), `<td colspan="4">الإجمالي</td><td>${N(R.bagsIn + R.bagsOut)}</td><td colspan="3"></td>`)}
+<h2 style="--c:#c0571b">ثانياً: العبوات الخطرة</h2>${tb(['التاريخ','اليوم','العدد','النوع','ملاحظة','السند','سجّله'], srt(R.containers,'date').map(r => row([fd(r.date), fw(r.date), N(r.count), r.kind || '—', r.note || '', has(r), who(r)])), `<td colspan="2">الإجمالي</td><td>${N(R.cont)}</td><td colspan="4"></td>`)}
+<h2 style="--c:#6a4c9c">ثالثاً: الأدوية وعبواتها الفارغة</h2>${tb(['الدواء','تاريخ الإخراج','الكمية','تاريخ رجوع العبوة الفارغة','ملاحظة'], srt(R.meds,'outDate').map(r => row([r.name, fd(r.outDate), r.qty || '—', okDate(r.returnDate) ? fd(r.returnDate) : 'لم ترجع', r.note || ''])))}
+<h2 style="--c:#0e7c6b">رابعاً: الدفتر الأسبوعي للنظافة</h2>${tb(['الأسبوع', TASKS.farm_clean, TASKS.water_clean], R.weeks.slice().reverse().map(w => row([fd(w.a) + ' – ' + fd(w.b), w.done.farm_clean ? 'نُفذت' : 'لم تُسجّل', w.done.water_clean ? 'نُفذت' : 'لم تُسجّل'])))}
+<h2 style="--c:#2a6db0">خامساً: الإجراءات البيئية المنفذة</h2>${tb(['الإجراء','التصنيف','الجهة المنفذة','الموعد المحدد','تاريخ التنفيذ','الحالة','السند'], R.procs.map(x => row([x.title, x.category || '', x.party || '—', fd(x.due), fd(x.done), x.late ? 'بعد الموعد' : 'في الموعد', has(x)])))}
+<h2 style="--c:#8c4a3c">سادساً: النافق</h2>${tb(['التاريخ','العدد','العنبر','طريقة التخلص','السبب / ملاحظة','السند','سجّله'], srt(R.mortality,'date').map(r => row([fd(r.date), N(r.count), r.barn || '—', r.method || '—', [r.cause, r.note].filter(Boolean).join(' · '), r.method === 'تسليم لجهة مرخصة' ? has(r) : '—', who(r)])), `<td>الإجمالي</td><td>${N(R.dead)}</td><td colspan="5"></td>`)}
+<h2 style="--c:#b0306a">سابعاً: ملاحظات التفتيش</h2>${tb(['تاريخ الزيارة','الجهة','الملاحظة','المهلة','تاريخ التصحيح','الحالة'], R.insp.map(i => row([fd(i.date), i.authority || '—', i.note, fd(i.dueDate), okDate(i.closedDate) ? fd(i.closedDate) : '—', i.status === 'closed' ? (okDate(i.dueDate) && i.closedDate > i.dueDate ? 'انحلّت بعد المهلة' : 'انحلّت') : inspState(i).t])))}
+<h2 style="--c:#3f5f7a">ثامناً: العقود والتراخيص</h2>${tb(['الوثيقة','النوع','الجهة / الطرف الثاني','الرقم','البداية','الانتهاء','الحالة'], S.contracts.map(c => row([c.title, c.type || '—', c.party || '—', c.number || '—', fd(c.startDate), fd(c.endDate), contractStatus(c).t])))}
+<div class="sign"><div>اسم المسؤول</div><div>التوقيع</div><div>الختم</div></div></div></body></html>`;
+}
+function reportCSV(range) {
+  const R = reportData(range); const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`; const L = [];
+  const rc = r => (r.receipts || []).length ? 'مرفق' : '';
+  L.push(['القسم','التاريخ','البيان','العدد/الكمية','تاريخ الرجوع/التصحيح','ملاحظة','السند','سجّله'].map(q).join(','));
+  R.manure.forEach(r => L.push(['السبلة', r.date, (DIR[r.direction] || DIR.to_store) + (r.barn ? ' - ' + r.barn : ''), r.bags, '', r.note, rc(r), nameOf(r.uid)].map(q).join(',')));
+  R.containers.forEach(r => L.push(['العبوات الخطرة', r.date, r.kind || '', r.count, '', r.note, rc(r), nameOf(r.uid)].map(q).join(',')));
+  R.meds.forEach(r => L.push(['الأدوية', r.outDate || '', r.name, r.qty || '', r.returnDate || 'لم ترجع', r.note, '', nameOf(r.uid)].map(q).join(',')));
+  R.procs.forEach(x => L.push(['الإجراءات البيئية', x.done, x.title + (x.party ? ' - ' + x.party : ''), '', '', 'الموعد ' + (x.due || '') + (x.late ? ' (متأخر)' : ''), rc(x), nameOf(x.uid)].map(q).join(',')));
+  R.mortality.forEach(r => L.push(['النافق', r.date, (r.method || '') + (r.barn ? ' - ' + r.barn : ''), r.count, '', [r.cause, r.note].filter(Boolean).join(' - '), rc(r), nameOf(r.uid)].map(q).join(',')));
+  R.insp.forEach(i => L.push(['ملاحظات التفتيش', i.date, i.note, '', i.closedDate || 'مفتوحة', 'المهلة ' + (i.dueDate || ''), rc(i), nameOf(i.uid)].map(q).join(',')));
+  R.tasks.forEach(r => L.push(['النظافة', r.date, TASKS_ALL[r.task] || r.task, '', '', [r.by, r.note].filter(Boolean).join(' - '), '', nameOf(r.uid)].map(q).join(',')));
+  return '﻿' + L.join('\r\n');
+}
+async function save(filename, data) {
+  if (!downloads) { toast('التنزيل غير متاح في هذا العرض', 'bad'); return; }
+  try { await downloads.save({filename, data}); } catch (e) { if (e && e.code !== 'declined') toast('تعذّر التنزيل', 'bad'); }
+}
+$('#dlHtml').onclick = () => { const [a, b] = rangeNow(); save(`تقرير-بيئي-${a}_${b}.html`, reportHTML()); };
+$('#dlCsv').onclick = () => { const [a, b] = rangeNow(); save(`سجلات-المزرعة-${a}_${b}.csv`, reportCSV()); };
+$('#kitDl').onclick = () => { const r = kitRange(); save(`ملف-التفتيش-${r[0]}_${r[1]}.html`, reportHTML(r)); };
+$('#kitPeriod').onchange = () => { $$('.kitCustom').forEach(el => el.hidden = $('#kitPeriod').value !== 'custom'); renderKit(); hydrateBlobs(); applyFilter(); };
+['#kf', '#kt'].forEach(s => $(s).addEventListener('change', () => { renderKit(); hydrateBlobs(); applyFilter(); }));
+$('#kitCsv').onclick = () => { const r = kitRange(); save(`سجلات-حمام-البستان-${r[0]}_${r[1]}.csv`, reportCSV(r)); };
+$('#q').addEventListener('input', applyFilter);
+$('#r_range').onchange = renderReports;
+['#r_from', '#r_to'].forEach(s => $(s).addEventListener('change', () => { $('#r_range').value = 'custom'; renderReports(); }));
+
+/* ---------- forms ---------- */
+const val = id => $('#' + id).value.trim();
+/* log dates fill themselves with today; they reset to today after every save and when the day changes */
+const LOGDATES = ['m_date','c_date','d_out','t_date','x_date','i_date'];
+let lastDay = today();
+function refreshDates() { const t = today(); LOGDATES.forEach(id => { const el = $('#' + id); if (el && document.activeElement !== el) el.value = t; }); lastDay = t; }
+function setDefaults() {
+  refreshDates();
+  if (!$('#p_due').value) $('#p_due').value = today();
+  LOGDATES.forEach(id => { const el = $('#' + id); const lab = el && el.closest('label'); if (lab && !lab.querySelector('.auto')) lab.firstChild.after(Object.assign(document.createElement('span'), {className: 'auto', textContent: ' · تلقائي: اليوم'})); });
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && today() !== lastDay) { refreshDates(); renderAll(); } });
+setInterval(() => { if (today() !== lastDay) { refreshDates(); renderAll(); } }, 60000);
+async function withBtn(form, fn) { const b = form.querySelector('[type=submit]'); const t = b.textContent; b.disabled = true; b.textContent = 'جارِ الحفظ…'; try { await fn(); } finally { b.disabled = false; b.textContent = t; } }
+const filesOf = id => [...($('#' + id).files || [])];
+$('#fDead').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const receipts = await uploadFiles(filesOf('x_files'));
+  const r = await add('mortality', {date: val('x_date'), count: Number(val('x_count')), barn: val('x_barn'), method: $('#x_method').value, cause: val('x_cause'), note: val('x_note'), receipts});
+  if (r) { toast('تم تسجيل النافق'); ['x_count','x_cause','x_note','x_files'].forEach(id => $('#' + id).value = ''); } }); };
+$('#fInsp').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const receipts = await uploadFiles(filesOf('i_files'));
+  const data = {date: val('i_date'), authority: val('i_auth'), note: val('i_note'), dueDate: $('#i_due').value, status: 'open', receipts};
+  const r = await add('inspections', data); if (!r) return;
+  ['i_note','i_due','i_files'].forEach(id => $('#' + id).value = '');
+  if (mcp && $('#i_cal').checked && okDate(data.dueDate)) {
+    try { const id = await calCreate(`مهلة تصحيح: ${data.note}`, data.dueDate, [{method:'popup', minutes: 3*1440-540}, {method:'email', minutes: 3*1440-540}, {method:'popup', minutes: 900}], `ملاحظة تفتيش من ${data.authority || ''} بتاريخ ${data.date}`);
+      await db.collection('inspections').doc(r.id).update({calEventId: id, calDue: data.dueDate}); toast('انحفظت الملاحظة وانضافت المهلة للتقويم'); }
+    catch (er) { toast('انحفظت الملاحظة، لكن ما انضافت للتقويم: ' + calErr(er), 'bad'); }
+  } else toast('انحفظت الملاحظة'); }); };
+$('#fStock').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const r = await add('stock', {name: val('s2_name'), kind: $('#s2_kind').value, qty: Number(val('s2_qty')), unit: val('s2_unit'), expiry: $('#s2_exp').value, note: val('s2_note')});
+  if (r) { toast('انضاف للمخزون'); ['s2_name','s2_qty','s2_unit','s2_exp','s2_note'].forEach(id => $('#' + id).value = ''); } }); };
+async function calCreate(summary, date, rems, desc) {
+  const end = pISO(date); end.setDate(end.getDate() + 1);
+  const res = await mcp.callTool(CAL, 'create_event', {summary: `${summary} · ${BRAND}`, allDay: true, startTime: `${date}T00:00:00`, endTime: `${iso(end)}T00:00:00`, description: desc || '', overrideReminders: rems, notificationLevel: 'NONE'});
+  return findId(res && res.payload);
+}
+async function contractCal(c) {
+  const id = await calCreate(`انتهاء: ${c.title}`, c.endDate, [{method:'popup', minutes: 40320}, {method:'email', minutes: 40320}, {method:'popup', minutes: 7*1440-540}], [c.type, c.party, c.number && 'رقم: ' + c.number, 'جدّد قبل الانتهاء'].filter(Boolean).join('\n'));
+  await db.collection('contracts').doc(c.id).update({calEventId: id, calDue: c.endDate});
+}
+$('#docCalAll').onclick = async e => {
+  const b = e.currentTarget; if (!mcp || !db) return;
+  const list = S.contracts.filter(c => !c.example && okDate(c.endDate) && c.endDate >= today() && !c.calEventId && c.calDue !== c.endDate);
+  if (!list.length) { toast('كل تواريخ الانتهاء موجودة في التقويم'); return; }
+  b.disabled = true; let n = 0;
+  try { for (const c of list) { await contractCal(c); n++; } toast(`انضاف ${N(n)} تذكير انتهاء للتقويم`); }
+  catch (er) { toast(`انضاف ${N(n)} من ${N(list.length)}. ` + calErr(er), 'bad'); } finally { b.disabled = false; } };
+
+/* attach receipts to an existing record */
+let attachTarget = null;
+$('#attachInput').addEventListener('change', async e => {
+  const files = [...(e.target.files || [])]; const tgt = attachTarget; attachTarget = null; e.target.value = '';
+  if (!files.length || !tgt || !db) return;
+  toast('جارِ رفع الصور…');
+  const up = await uploadFiles(files); if (!up.length) return;
+  const [col, id, idx] = tgt.split(':'); const rec = S[col] && S[col].find(r => r.id === id); if (!rec) return;
+  try {
+    if (col === 'procedures') { const h = (rec.history || []).map(x => ({...x})); const i = Number(idx); if (!h[i]) return; h[i].receipts = [...(h[i].receipts || []), ...up]; await db.collection(col).doc(id).update({history: h}); }
+    else if (col === 'contracts') await db.collection(col).doc(id).update({files: [...(rec.files || []), ...up]});
+    else await db.collection(col).doc(id).update({receipts: [...(rec.receipts || []), ...up]});
+    toast('انرفق السند');
+  } catch (er) { toast(dbErr(er), 'bad'); }
+});
+$('#p_cat').innerHTML = PCATS.map(c => `<option>${esc(c)}</option>`).join('');
+$('#fProc').onsubmit = async e => { e.preventDefault();
+  const data = {title: val('p_title'), category: $('#p_cat').value, dueDate: val('p_due'), repeat: $('#p_rep').value, party: val('p_party'), remindDays: Number($('#p_rem').value), note: val('p_note'), active: true, history: []};
+  const r = await add('procedures', data);
+  if (!r) return;
+  ['p_title','p_party','p_note'].forEach(id => $('#' + id).value = '');
+  if (mcp && $('#p_cal').checked) {
+    toast('تمت إضافة الإجراء، جارِ إضافته للتقويم…');
+    try { await calAdd({id: r.id, ...data}); toast('تمت الإضافة وانحط في تقويم Google'); } catch (er) { toast('انحفظ الإجراء، لكن ما انضاف للتقويم: ' + calErr(er), 'bad'); }
+  } else toast('تمت إضافة الإجراء'); };
+$('#calAll').onclick = async e => {
+  const b = e.currentTarget; if (!mcp || !db) return;
+  const list = activeProcs().filter(p => !p.example && okDate(p.dueDate) && p.calDue !== p.dueDate);
+  if (!list.length) { $('#calMsg').textContent = 'كل المواعيد موجودة في التقويم.'; return; }
+  b.disabled = true; let n = 0;
+  try { for (const p of list) { $('#calMsg').textContent = `جارِ الإضافة ${n + 1} من ${list.length}…`; await calSync(p); n++; }
+    $('#calMsg').textContent = `انضاف ${N(n)} موعد للتقويم.`; }
+  catch (er) { $('#calMsg').textContent = `انضاف ${N(n)} من ${N(list.length)}. ` + calErr(er); }
+  finally { b.disabled = false; } };
+$('#fManure').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const receipts = await uploadFiles(filesOf('m_files'));
+  const r = await add('manure', {date: val('m_date'), bags: Number(val('m_bags')), barn: val('m_barn'), direction: $('#m_dir').value, note: val('m_note'), receipts});
+  if (r) { toast('تم حفظ إخراج السبلة'); ['m_bags','m_note','m_files'].forEach(id => $('#' + id).value = ''); } }); };
+$('#fCont').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+  const receipts = await uploadFiles(filesOf('c_files'));
+  const r = await add('containers', {date: val('c_date'), count: Number(val('c_count')), kind: val('c_kind'), note: val('c_note'), receipts});
+  if (r) { toast('تم حفظ العبوات'); ['c_count','c_kind','c_note','c_files'].forEach(id => $('#' + id).value = ''); } }); };
+$('#fMed').onsubmit = async e => { e.preventDefault();
+  const r = await add('meds', {name: val('d_name'), outDate: val('d_out'), qty: val('d_qty'), note: val('d_note'), returnDate: ''});
+  if (r) { const msg = await deductStock(val('d_name'), val('d_qty')); toast('تم حفظ الدواء' + msg); ['d_name','d_qty','d_note'].forEach(id => $('#' + id).value = ''); } };
+$('#fTask').onsubmit = async e => { e.preventDefault();
+  await withBtn(e.target, async () => {
+    const receipts = await uploadFiles(filesOf('t_files'));
+    const r = await add('tasks', {task: $('#t_task').value, date: val('t_date'), by: val('t_by'), note: val('t_note'), receipts});
+    if (r) { toast('تم تسجيل النظافة'); ['t_note','t_files'].forEach(id => $('#' + id).value = ''); } }); };
+$('#t_task').innerHTML = Object.entries(TASKS_ALL).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('');
+$('#fSettings').onsubmit = async e => { e.preventDefault();
+  if (!db) return toast('الحفظ غير متاح في هذا العرض', 'bad');
+  try { await db.doc('config/farm').set({name: val('s_name'), owner: val('s_owner'), permit: val('s_permit'), location: val('s_loc')}); toast('تم حفظ بيانات المزرعة'); }
+  catch (er) { toast(dbErr(er), 'bad'); } };
+function renderSettings() { const s = S.settings || {}; const m = {s_name:'name', s_owner:'owner', s_permit:'permit', s_loc:'location'};
+  Object.entries(m).forEach(([id, k]) => { const el = $('#' + id); if (document.activeElement !== el) el.value = s[k] || ''; }); }
+
+$('#fContract').onsubmit = async e => { e.preventDefault();
+  if (!db) return toast('الحفظ غير متاح في هذا العرض', 'bad');
+  const btn = $('#kSubmit'); btn.disabled = true; const files = [...$('#k_files').files];
+  try {
+    btn.textContent = files.length ? `جارِ رفع ${files.length} ملف…` : 'جارِ الحفظ…';
+    const up = await uploadFiles(files);
+    const cdata = {title: val('k_title'), party: val('k_party'), type: $('#k_type').value, number: val('k_no'), startDate: $('#k_start').value, endDate: $('#k_end').value, note: val('k_note'), files: up};
+    const wantCal = mcp && $('#k_cal').checked && okDate(cdata.endDate) && cdata.endDate >= today();
+    const r = await add('contracts', cdata);
+    if (r) { $('#fContract').reset();
+      if (wantCal) { try { await contractCal({id: r.id, ...cdata}); toast('انحفظ وانضاف تذكير الانتهاء للتقويم'); } catch (er) { toast('انحفظ، لكن ما انضاف للتقويم: ' + calErr(er), 'bad'); } }
+      else toast('تم الحفظ'); }
+  } finally { btn.disabled = false; btn.textContent = 'حفظ'; }
+};
+
+/* delete (two-step), return, zoom */
+document.addEventListener('click', async e => {
+  const z = e.target.closest('[data-zoom]');
+  if (z) { const src = z.dataset.zoom || z.currentSrc || z.src; if (!src) return; const lb = document.createElement('div'); lb.className = 'lightbox'; const im = document.createElement('img'); im.src = src; im.alt = ''; lb.append(im); lb.onclick = () => lb.remove(); document.body.append(lb); return; }
+  const pdoc = e.target.closest('[data-pdfdoc]');
+  if (pdoc) { try { const d = await blobData(pdoc.dataset.pdfdoc); if (!d) return toast('الملف غير موجود', 'bad'); const b = await (await fetch(d)).blob(); await save(pdoc.dataset.name || 'ملف.pdf', b); } catch { toast('تعذّر فتح الملف', 'bad'); } return; }
+  const lb = e.target.closest('.lightbox'); if (lb) { lb.remove(); return; }
+  const d = e.target.closest('[data-del]');
+  if (d) {
+    if (!d.classList.contains('armed')) { d.classList.add('armed'); d.textContent = 'تأكيد الحذف'; setTimeout(() => { d.classList.remove('armed'); d.textContent = 'حذف'; }, 4000); return; }
+    const [col, id] = d.dataset.del.split(':'); if (!db) return;
+    const rec = S[col].find(r => r.id === id);
+    try { await db.collection(col).doc(id).delete();
+      if (rec) { await removeFiles(rec.files); await removeFiles(rec.receipts); for (const h of (rec.history || [])) await removeFiles(h.receipts); }
+      if (['procedures','contracts','inspections'].includes(col) && rec && rec.calEventId && mcp) { try { await mcp.callTool(CAL, 'delete_event', {eventId: rec.calEventId, notificationLevel: 'NONE'}); } catch (er) { toast('انحذف هنا، لكن احذفه من التقويم يدويًا: ' + calErr(er), 'bad'); return; } }
+      toast('تم الحذف'); } catch (er) { toast(dbErr(er), 'bad'); }
+    return;
+  }
+  const pd = e.target.closest('[data-pdone]');
+  if (pd) { const id = pd.dataset.pdone; const inp = $(`[data-pdate="${CSS.escape(id)}"]`); pd.disabled = true;
+    try { const res = await markProcDone(id, inp && inp.value); toast(typeof res === 'string' ? `تم التنفيذ. الموعد الجاي ${fd(res)}` : 'تم تسجيل التنفيذ'); }
+    catch (er) { toast(dbErr(er), 'bad'); } finally { pd.disabled = false; } return; }
+  const ps = e.target.closest('[data-psnooze]');
+  if (ps) { const p = S.procedures.find(x => x.id === ps.dataset.psnooze); if (!p || !db) return;
+    const base = okDate(p.dueDate) && p.dueDate > today() ? p.dueDate : today(); const d = pISO(base); d.setDate(d.getDate() + 7);
+    try { await db.collection('procedures').doc(p.id).update({dueDate: iso(d)}); toast(`تأجّل إلى ${fd(iso(d))}`); await calFollow(p, iso(d), false); } catch (er) { toast(dbErr(er), 'bad'); } return; }
+  const pc = e.target.closest('[data-pcal]');
+  if (pc) { const p = S.procedures.find(x => x.id === pc.dataset.pcal); if (!p || !mcp || !db) return; pc.disabled = true; pc.textContent = 'جارِ الإضافة…';
+    try { await calSync(p); toast('انضاف لتقويم Google'); } catch (er) { toast(calErr(er), 'bad'); pc.disabled = false; pc.textContent = 'أضف لتقويم Google'; } return; }
+  const ed = e.target.closest('[data-edit]');
+  if (ed) { const [col, id] = ed.dataset.edit.split(':'); openEdit(col, id); return; }
+  const qc = e.target.closest('[data-qclean]');
+  if (qc) { qc.disabled = true; const r = await add('tasks', {task: qc.dataset.qclean, date: today(), by: '', note: '', receipts: []});
+    if (r) toast(`تم تسجيل ${TASKS_ALL[qc.dataset.qclean]} اليوم. تقدر ترفق صورة من السجل تحت.`); else qc.disabled = false; return; }
+  const at = e.target.closest('[data-attach]');
+  if (at) { if (!db) return toast('الحفظ غير متاح في هذا العرض', 'bad'); attachTarget = at.dataset.attach; $('#attachInput').click(); return; }
+  const ic = e.target.closest('[data-iclose]');
+  if (ic) { const id = ic.dataset.iclose; const i = S.inspections.find(x => x.id === id); if (!i || !db) return;
+    const inp = $(`[data-idate="${CSS.escape(id)}"]`); const date = inp && okDate(inp.value) ? inp.value : today(); ic.disabled = true;
+    try { await db.collection('inspections').doc(id).update({status: 'closed', closedDate: date, ...(myId ? {closedBy: myId} : {})}); toast('سُجّل التصحيح. أرفق صورة بعد التصحيح إذا عندك.');
+      if (mcp && i.calEventId) { try { await mcp.callTool(CAL, 'update_event', {eventId: i.calEventId, summary: `✓ انحلّت: ${i.note} · ${BRAND}`, notificationLevel: 'NONE', useDefaultReminders: false}); } catch {} } }
+    catch (er) { toast(dbErr(er), 'bad'); } finally { ic.disabled = false; } return; }
+  const icl = e.target.closest('[data-ical]');
+  if (icl) { const i = S.inspections.find(x => x.id === icl.dataset.ical); if (!i || !mcp || !db) return; icl.disabled = true;
+    try { const id = await calCreate(`مهلة تصحيح: ${i.note}`, i.dueDate, [{method:'popup', minutes: 3*1440-540}, {method:'email', minutes: 3*1440-540}, {method:'popup', minutes: 900}], `ملاحظة تفتيش بتاريخ ${i.date}`);
+      await db.collection('inspections').doc(i.id).update({calEventId: id, calDue: i.dueDate}); toast('انضافت المهلة للتقويم'); }
+    catch (er) { toast(calErr(er), 'bad'); icl.disabled = false; } return; }
+  const cc = e.target.closest('[data-ccal]');
+  if (cc) { const c = S.contracts.find(x => x.id === cc.dataset.ccal); if (!c || !mcp || !db) return; cc.disabled = true;
+    try { await contractCal(c); toast('انضاف تذكير الانتهاء للتقويم'); } catch (er) { toast(calErr(er), 'bad'); cc.disabled = false; } return; }
+  const sq = e.target.closest('[data-sq]');
+  if (sq) { const [id, dlt] = sq.dataset.sq.split(':'); const s = S.stock.find(x => x.id === id); if (!s || !db || sq.disabled) return;
+    $$(`[data-sq^="${CSS.escape(id)}:"]`).forEach(b => b.disabled = true);
+    try { await db.collection('stock').doc(id).update({qty: Math.max(0, Math.round((Number(s.qty || 0) + Number(dlt)) * 100) / 100)}); }
+    catch (er) { toast(dbErr(er), 'bad'); } finally { $$(`[data-sq^="${CSS.escape(id)}:"]`).forEach(b => b.disabled = false); } return; }
+  const sd = e.target.closest('[data-sdisp]');
+  if (sd) { const s = S.stock.find(x => x.id === sd.dataset.sdisp); if (!s || !db) return; sd.disabled = true;
+    const due = new Date(); due.setDate(due.getDate() + 7);
+    const pdata = {title: `استلام للإتلاف: ${s.name}`, category: 'استلام الأدوية الخطرة والمنتهية', dueDate: iso(due), repeat: 'none', party: '', remindDays: 3, note: `${s.kind || ''} · الكمية ${s.qty ?? ''} ${s.unit || ''} · انتهى ${s.expiry || ''}`, active: true, history: []};
+    const r = await add('procedures', pdata);
+    if (r) { try { await db.collection('stock').doc(s.id).update({disposalProcId: r.id}); } catch {}
+      toast(`انجدول الاستلام يوم ${fd(iso(due))} في الإجراءات البيئية`);
+      if (mcp) { try { await calAdd({id: r.id, ...pdata}); } catch (er) { toast('انجدول، لكن ما انضاف للتقويم: ' + calErr(er), 'bad'); } } }
+    sd.disabled = false; return; }
+  const r = e.target.closest('[data-ret]');
+  if (r) { const id = r.dataset.ret; const inp = $(`[data-retdate="${CSS.escape(id)}"]`); const date = inp && okDate(inp.value) ? inp.value : today();
+    try { await db.collection('meds').doc(id).update({returnDate: date}); toast('تم تسجيل رجوع العبوة'); } catch (er) { toast(dbErr(er), 'bad'); } }
+});
+$('#clearEx').onclick = async e => {
+  const b = e.currentTarget;
+  if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'تأكيد: امسح كل الأمثلة'; setTimeout(() => { b.classList.remove('armed'); b.textContent = 'امسح الأمثلة'; }, 4000); return; }
+  b.disabled = true;
+  for (const c of COLS) for (const r of S[c].filter(x => x.example)) { try { await db.collection(c).doc(r.id).delete(); } catch {} }
+  b.disabled = false; toast('تم مسح الأمثلة');
+};
+
+/* ---------- voice ---------- */
+const ta = $('#vcText'); let vItems = [], vCtl = null, dictLang = 'ar';
+const micBtn = $('#micBtn');
+micBtn.onclick = () => {
+  if (!dict) { toast('الميكروفون يشتغل في متصفح Chrome أو Edge، أو في تطبيق Claude. تقدر تكتب النص بدلاً منه.'); return; }
+  if (dict.active()) { dict.stop().catch(() => {}); return; }
+  dict.start(dictLang ? {language: dictLang} : undefined).catch(er => {
+    const c = er && er.code;
+    if (c === 'unavailable' && dictLang) { dictLang = null; toast('اضغط الميكروفون مرة ثانية'); }
+    else if (c === 'not_granted') { toast('الميكروفون غير مسموح لهذه الصفحة. تقدر تكتب النص.', 'bad'); }
+    else if (c === 'rate_limited') toast('حاول بعد لحظات');
+    else if (c !== 'dismissed' && c !== 'stopped') toast('تعذّر تشغيل الميكروفون', 'bad');
+  });
+};
+$('#vcClear').onclick = () => { ta.value = ''; $('#vcPartial').textContent = ''; };
+$('#vcCancel').onclick = () => { vItems = []; $('#vcPreviewWrap').hidden = true; };
+
+const TYPE_UI = {manure:{l:'السبلة', c:'c-manure'}, container:{l:'العبوات الخطرة', c:'c-cont'}, med_out:{l:'إخراج دواء', c:'c-meds'}, med_return:{l:'رجوع عبوة دواء', c:'c-meds'}, task:{l:'نظافة', c:'c-tasks'}, proc_done:{l:'تنفيذ إجراء بيئي', c:'c-proc'}, proc_new:{l:'موعد جديد', c:'c-proc'}, mortality:{l:'نافق', c:'c-dead'}};
+const DMETHODS = ['حرق','دفن صحي','تسليم لجهة مرخصة'];
+const norm = s => String(s || '').replace(/[ًٌٍَُِّْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase();
+const nameMatch = (a, b) => { a = norm(a); b = norm(b); return a && b && (a === b || a.includes(b) || b.includes(a)); };
+
+/* ---------- free voice parser (rules for Gulf Arabic farm talk; no AI service needed) ---------- */
+const NUMW = {'واحد':1,'وحده':1,'اثنين':2,'ثنين':2,'ثنتين':2,'اثنتين':2,'ثلاث':3,'ثلاثه':3,'ثلاثة':3,'اربع':4,'اربعه':4,'خمس':5,'خمسه':5,'ست':6,'سته':6,'سبع':7,'سبعه':7,'ثمان':8,'ثمانيه':8,'ثمن':8,'تسع':9,'تسعه':9,'عشر':10,'عشره':10,
+  'احدعش':11,'حدعش':11,'اثنعش':12,'ثنعش':12,'ثلطعش':13,'ثلاثطعش':13,'اربعطعش':14,'خمسطعش':15,'ستطعش':16,'سبعطعش':17,'ثمنطعش':18,'تسعطعش':19,
+  'عشرين':20,'ثلاثين':30,'اربعين':40,'خمسين':50,'ستين':60,'سبعين':70,'ثمانين':80,'تسعين':90,'ميه':100,'مية':100,'مائه':100,'ميتين':200};
+function toDigits(s) {
+  let t = norm(String(s).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+  t = t.replace(/(\S+)\s+و(عشرين|ثلاثين|اربعين|خمسين|ستين|سبعين|ثمانين|تسعين)/g, (m, u, tens) => (NUMW[norm(u)] && NUMW[norm(u)] < 10) ? String(NUMW[norm(u)] + NUMW[tens]) : m);
+  return t.split(' ').map(w => { const bare = w.replace(/^و/, ''); return NUMW[w] != null ? NUMW[w] : (NUMW[bare] != null && w !== bare ? 'و' + NUMW[bare] : w); }).join(' ');
+}
+const firstNum = s => { const m = s.match(/\d+(\.\d+)?/); return m ? Number(m[0]) : null; };
+const barnIn = s => { const m = s.match(/عنبر(?:\s*رقم)?\s*(\S+)/); return m ? 'عنبر ' + m[1] : null; };
+const MONTHS = {'يناير':1,'فبراير':2,'مارس':3,'ابريل':4,'مايو':5,'يونيو':6,'يوليو':7,'اغسطس':8,'سبتمبر':9,'اكتوبر':10,'نوفمبر':11,'ديسمبر':12};
+const WDAYS = {'الاحد':0,'الاثنين':1,'الثلاثاء':2,'الثلاثا':2,'الاربعاء':3,'الاربعا':3,'الخميس':4,'الجمعه':5,'السبت':6};
+function futureDate(s) {
+  const d = new Date(); const add = n => { d.setDate(d.getDate() + n); return iso(d); };
+  if (/بعد بكره|بعد بكرا/.test(s)) return add(2);
+  if (/بكره|بكرا|غدا/.test(s)) return add(1);
+  const ad = s.match(/بعد\s*(\d+)\s*(يوم|ايام)/); if (ad) return add(Number(ad[1]));
+  if (/الاسبوع الجاي|الاسبوع القادم/.test(s)) return add(7);
+  if (/الشهر الجاي|الشهر القادم/.test(s)) { d.setMonth(d.getMonth() + 1); return iso(d); }
+  for (const [w, n] of Object.entries(WDAYS)) if (s.includes(w)) { let k = (n - d.getDay() + 7) % 7; if (k === 0) k = 7; return add(k); }
+  for (const [w, m] of Object.entries(MONTHS)) { const r = s.match(new RegExp('(\\d+)\\s*' + w)); if (r) { let y = d.getFullYear(); const c = new Date(y, m - 1, Number(r[1])); if (c < d) y++; return iso(new Date(y, m - 1, Number(r[1]))); } }
+  const sl = s.match(/(\d{1,2})\s*[\/-]\s*(\d{1,2})/); if (sl) { let y = d.getFullYear(); const c = new Date(y, Number(sl[2]) - 1, Number(sl[1])); if (c < d) y++; return iso(new Date(y, Number(sl[2]) - 1, Number(sl[1]))); }
+  return null;
+}
+function parseVoice(text) {
+  const items = [], unclear = [];
+  const parts = String(text).split(/[،,.؛;\n]+|\s+(?=و(?:طلع|صرف|رجع|سوي|نظف|غسل|نفق|مات|جات|جا |ذكر|اخرج|شال|استلم|عقم|رشي|عندنا|موعد|بعد))/).map(s => s.trim()).filter(Boolean);
+  const medNames = [...new Set([...S.meds.map(m => m.name), ...S.stock.map(s => s.name)].filter(Boolean))];
+  const openMeds = S.meds.filter(m => !okDate(m.returnDate)).map(m => m.name);
+  for (const raw of parts) {
+    const c = toDigits(raw); const n = firstNum(c);
+    if (/ذكرني|موعد|بيجون|بتجي|بيجي|حجزنا/.test(c) && !/^(جات|جا)/.test(c)) {
+      const date = futureDate(c);
+      const rep = /كل اسبوعين/.test(c) ? 'biweekly' : /كل اسبوع/.test(c) ? 'weekly' : /كل (3|ثلاث) (شهور|اشهر)/.test(c) ? 'quarterly' : /كل سنه/.test(c) ? 'yearly' : /كل شهر/.test(c) ? 'monthly' : 'none';
+      const cat = /سبل|سماد/.test(c) ? 'إخراج السبلة' : /دواء|ادويه|منتهي/.test(c) ? 'استلام الأدوية الخطرة والمنتهية' : /نفايات|مخلفات|خطر/.test(c) ? 'استلام النفايات الخطرة' : /تفتيش|زياره|مفتش/.test(c) ? 'زيارة أو تفتيش' : /تعقيم|مكافحه|رش|حشرات/.test(c) ? 'تعقيم ومكافحة آفات' : /عقد|ترخيص|تصريح/.test(c) ? 'تجديد عقد أو ترخيص' : 'أخرى';
+      const title = raw.replace(/^و/, '').replace(/ذكّ?رني(\s+ب)?|موعد/g, '').replace(/(يوم|بكرة|بكره|بعد بكرة|الأسبوع الجاي|كل (شهر|أسبوع|أسبوعين|سنة))/g, '').replace(/\s+/g, ' ').trim().slice(0, 60) || cat;
+      if (date) { items.push({type: 'proc_new', date, title, category: cat, repeat: rep}); continue; }
+    }
+    if (/(جات|جا|حضرت|حضر|استلم|شالت|شالو|اخذت|اخذو)/.test(c) && /(شركه|زياره|تفتيش|مفتش|نفايات|مخلفات|المتعهد)/.test(c)) {
+      const kw = /سبل|سماد/.test(c) ? 'سبل' : /دواء|ادويه/.test(c) ? 'ادويه' : /نفايات|مخلفات|خطر/.test(c) ? 'نفايات' : /تفتيش|زياره|مفتش/.test(c) ? 'زياره' : '';
+      const hit = activeProcs().find(p => nameMatch(p.title, raw) || (kw && norm(p.title + ' ' + (p.category || '')).includes(kw)));
+      if (hit) items.push({type: 'proc_done', date: today(), title: hit.title});
+      if (hit && !/سبل|سماد/.test(c)) continue;
+    }
+    if (/(نافق|نفق|نفقت|ميت|ميته|ماتت|مات)/.test(c)) {
+      items.push({type: 'mortality', date: today(), count: n || 1, barn: barnIn(c), method: /دفن|دفنا/.test(c) ? 'دفن صحي' : /سلم|تسليم|شركه|استلم/.test(c) ? 'تسليم لجهة مرخصة' : 'حرق', cause: null}); continue;
+    }
+    if (/رجع/.test(c) && /(عبو|علب|قاروره|فاضي|فارغ)/.test(c)) {
+      const nm = openMeds.find(m => norm(c).includes(norm(m))) || medNames.find(m => norm(c).includes(norm(m))) || c.replace(/.*(عبوه|عبوت|علبه)\s*/, '').replace(/(الفاضيه|الفارغه|الفاضي|الفارغ|دواء|حق)/g, '').trim();
+      items.push({type: 'med_return', date: today(), name: nm || 'دواء'}); continue;
+    }
+    const knownMed = medNames.find(m => norm(c).includes(norm(m)));
+    if ((/(صرف|صرفنا|طلعنا|اخرجنا|عطينا|حطينا)/.test(c) && /(دواء|علاج|مضاد|فيتامين)/.test(c)) || (knownMed && /(صرف|طلع|اخرج|عطي|حطي)/.test(c))) {
+      let nm = knownMed;
+      if (!nm) { const m = raw.match(/(?:دواء|علاج|مضاد|فيتامين)\s+([^\s،,.]+(?:\s+[^\s،,.]+)?)/); nm = m ? m[1].replace(/^(ال)?(فلاني)$/, '') : ''; if (/فيتامين/.test(c) && nm && !/فيتامين/.test(nm)) nm = 'فيتامين ' + nm; }
+      const q = c.match(/(\d+(\.\d+)?)\s*(عبوه|عبوات|لتر|كيس|حبه|جرام|مل|علبه)/);
+      nm = String(nm || '').replace(/[\d٠-٩]+.*$/, '').replace(/\s+(عبوه|عبوة|عبوات|لتر|كيس|حبه|علبه)$/, '').trim();
+      items.push({type: 'med_out', date: today(), name: nm || 'دواء', qty: q ? q[0] : null}); continue;
+    }
+    if (/(سبل|سماد|زبل)/.test(c)) {
+      items.push({type: 'manure', date: today(), bags: n || 0, barn: barnIn(c), direction: /(برا|خارج|شال|الشركه|نقل|المصنع|من المستودع)/.test(c) ? 'out' : 'to_store'}); continue;
+    }
+    if (/(نظاف|نظف|غسل|تعقيم|عقم|رش|كنس)/.test(c)) {
+      const task = /(سقاي|مشارب|مساقي|خزان|الماء|المويه|موي)/.test(c) ? 'water_clean' : /(تعقيم|عقم|رش|مطهر)/.test(c) ? 'disinfect' : /(عنبر|عنابر|اقفاص|قفص)/.test(c) ? 'barn_clean' : /مستودع/.test(c) ? 'store_clean' : /(مخلفات|زباله|نفايات)/.test(c) ? 'waste_area' : 'farm_clean';
+      items.push({type: 'task', date: today(), task}); continue;
+    }
+    if (/(عبو|علب|براميل|جوالين)/.test(c)) { items.push({type: 'container', date: today(), count: n || 1, kind: /مبيد/.test(c) ? 'مبيدات' : /مطهر/.test(c) ? 'مطهرات' : null}); continue; }
+    if (raw.replace(/^و/, '').trim().length > 2) unclear.push(raw);
+  }
+  return {items, unclear};
+}
+window.__parseVoice = parseVoice;
+
+$('#vcGo').onclick = async () => {
+  const text = ta.value.trim(); if (!text) { toast('اكتب أو قل شيئًا أولاً'); return; }
+  if (dict && dict.active()) await dict.stop().catch(() => {});
+  const openMeds = [...new Set(S.meds.filter(m => !okDate(m.returnDate)).map(m => m.name))];
+  const t = today();
+  const prompt = `You convert a pigeon-farm worker's Arabic (Gulf dialect, possibly speech-to-text with errors) daily log into structured records.
+Today is ${t} (${new Date().toLocaleDateString('en-US', {weekday:'long'})}). Every record is logged with today's date (${t}); do not ask for or infer other dates for records. The only exception is "proc_new": its date is the future appointment date that was said (resolve words like بكرة، الأسبوع الجاي، يوم الخميس، ١ ديسمبر to Gregorian YYYY-MM-DD; convert Hijri if said).
+Record types:
+- "manure": سبلة / سماد moved. Fields: date, bags (integer count of أكياس), barn (العنبر name/number as short text, or null), direction: "to_store" when moved from the barns/العنابر into the warehouse/المستودع (default), "out" when taken out of the warehouse or off the farm (شالتها الشركة، طلعت من المستودع، نقلناها برا).
+- "container": hazardous containers / العبوات الخطرة taken out. Fields: date, count (integer), kind (short text or null).
+- "med_out": a medicine / دواء taken out for use (طلعنا، صرفنا). Fields: date, name (medicine name, cleaned, keep the spoken language), qty (short text or null).
+- "med_return": an empty medicine container returned (رجعنا العبوة الفاضية/الفارغة). Fields: date, name. Currently open medicines: ${JSON.stringify(openMeds)} — when the text clearly refers to one, use that exact name.
+- "task": cleaning done. Fields: date, task: "farm_clean" (نظافة المزرعة/الحوش بشكل عام), "water_clean" (نظافة السقايات/المشارب/المساقي/خزان الماء), "barn_clean" (نظافة العنابر/الأقفاص), "store_clean" (نظافة المستودع), "disinfect" (تعقيم/رش مطهرات), "waste_area" (نظافة منطقة المخلفات/الزبالة).
+- "proc_done": a scheduled environmental procedure was carried out (e.g. شركة النفايات جات وشالت النفايات الخطرة، استلموا الأدوية المنتهية، جات زيارة التفتيش). Fields: date, title. Scheduled procedures: ${JSON.stringify(activeProcs().map(p => p.title))} — when the text clearly refers to one, use that exact title.
+- "proc_new": a future appointment or reminder to schedule (موعد، ذكّرني، بيجون يوم كذا). Fields: date (the due date), title (short), category (one of ${JSON.stringify(PCATS)}), repeat ("none","weekly","biweekly","monthly","quarterly","yearly"; default "none").
+- "mortality": dead birds / نافق / طيور ميتة. Fields: date, count (integer), barn (or null), method: one of "حرق","دفن صحي","تسليم لجهة مرخصة" (default "حرق" if not said), cause (short text or null).
+Moving manure bags is a "manure" record even if a procedure about manure also exists; add a "proc_done" too only when the text says the scheduled pickup/visit happened.
+Convert spoken Arabic numbers to digits (عشرين=20، خمسطعش=15، ميه=100). One record per distinct action; a medicine taken out and later returned in the same text is two records.
+Reply with only JSON in this shape:
+{"items":[{"type":"manure","date":"${t}","bags":20,"barn":"2","direction":"to_store"},{"type":"med_out","date":"${t}","name":"...","qty":null}],"unclear":["any part you could not map, quoted in Arabic"]}
+Text:
+"""${text.slice(0, 4000)}"""`;
+  const btn = $('#vcGo'); btn.disabled = true; $('#vcStatus').textContent = 'جارِ قراءة الجملة وتوزيعها…';
+  vCtl = new AbortController();
+  try {
+    const r = sample ? await sample.json(prompt, {signal: vCtl.signal, cache: false, effort: 'low'}) : parseVoice(text);
+    vItems = (Array.isArray(r && r.items) ? r.items : []).filter(i => i && TYPE_UI[i.type]).map(i => ({...i, date: i.type === 'proc_new' && okDate(i.date) ? i.date : t}));
+    const unclear = Array.isArray(r && r.unclear) ? r.unclear.filter(Boolean) : [];
+    $('#vcUnclear').hidden = !unclear.length; $('#vcUnclear').textContent = unclear.length ? 'ما فهمت هذي الأجزاء: ' + unclear.join(' · ') : '';
+    if (!vItems.length) { $('#vcStatus').textContent = 'ما لقيت سجلات واضحة في النص. جرّب تذكر العدد والقسم.'; $('#vcPreviewWrap').hidden = true; }
+    else { $('#vcStatus').textContent = `لقيت ${vItems.length} سجل. راجعها واحفظ.`; renderPreview(); }
+  } catch (er) {
+    const c = er && er.code;
+    $('#vcStatus').textContent = c === 'not_granted' || c === 'sampling_disabled' ? 'التوزيع التلقائي غير مسموح. سجّل من الأقسام مباشرة.' : c === 'rate_limited' ? 'كثرت الطلبات، حاول بعد شوي.' : c === 'invalid_json' ? 'ما قدرت أقرأ النتيجة. اضغط مرة ثانية.' : c === 'cancelled' ? '' : 'صار خطأ، حاول مرة ثانية.';
+  } finally { btn.disabled = false; }
+};
+
+function previewFields(it, i) {
+  const date = `<span class="stamp">📅 اليوم ${esc(fd(it.date))}</span>`;
+  if (it.type === 'manure') return date + `<label class="f">الأكياس<input type="number" min="1" data-pi="${i}" data-k="bags" value="${esc(it.bags ?? '')}"></label><label class="f">العنبر<input data-pi="${i}" data-k="barn" value="${esc(it.barn ?? '')}"></label><label class="f">الحركة<select data-pi="${i}" data-k="direction"><option value="to_store"${it.direction !== 'out' ? ' selected' : ''}>إلى المستودع</option><option value="out"${it.direction === 'out' ? ' selected' : ''}>خارج المزرعة</option></select></label>`;
+  if (it.type === 'container') return date + `<label class="f">العدد<input type="number" min="1" data-pi="${i}" data-k="count" value="${esc(it.count ?? '')}"></label><label class="f">النوع<input data-pi="${i}" data-k="kind" value="${esc(it.kind ?? '')}"></label>`;
+  if (it.type === 'med_out') return date + `<label class="f">الدواء<input data-pi="${i}" data-k="name" value="${esc(it.name ?? '')}"></label><label class="f">الكمية<input data-pi="${i}" data-k="qty" value="${esc(it.qty ?? '')}"></label>`;
+  if (it.type === 'med_return') {
+    const opts = [];
+    vItems.forEach((o, j) => { if (o.type === 'med_out') opts.push({v: 'b:' + j, t: `${o.name} (من نفس الجملة)`, m: nameMatch(o.name, it.name)}); });
+    S.meds.filter(m => !okDate(m.returnDate)).forEach(m => opts.push({v: 'd:' + m.id, t: `${m.name} — خرج ${fd(m.outDate)}`, m: nameMatch(m.name, it.name)}));
+    if (it.target == null) { const hit = opts.find(o => o.m); it.target = hit ? hit.v : 'new'; }
+    return date + `<label class="f">الدواء<input data-pi="${i}" data-k="name" value="${esc(it.name ?? '')}"></label><label class="f">يربط مع<select data-pi="${i}" data-k="target">${opts.map(o => `<option value="${esc(o.v)}"${o.v === it.target ? ' selected' : ''}>${esc(o.t)}</option>`).join('')}<option value="new"${it.target === 'new' ? ' selected' : ''}>سجل جديد (بدون إخراج مسجل)</option></select></label>`;
+  }
+  if (it.type === 'task') return date + `<label class="f">النظافة<select data-pi="${i}" data-k="task">${Object.entries(TASKS_ALL).map(([k, v]) => `<option value="${k}"${it.task === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label>`;
+  if (it.type === 'proc_done') {
+    const A = activeProcs();
+    if (it.target == null) { const hit = A.find(p => nameMatch(p.title, it.title)); it.target = hit ? hit.id : (A[0] ? A[0].id : ''); }
+    return `${date}<label class="f">الإجراء<select data-pi="${i}" data-k="target">${A.map(p => `<option value="${esc(p.id)}"${p.id === it.target ? ' selected' : ''}>${esc(p.title)} — ${esc(fd(p.dueDate))}</option>`).join('') || '<option value="">ما فيه إجراءات مجدولة</option>'}</select></label>`;
+  }
+  if (it.type === 'mortality') return date + `<label class="f">العدد<input type="number" min="1" data-pi="${i}" data-k="count" value="${esc(it.count ?? '')}"></label><label class="f">العنبر<input data-pi="${i}" data-k="barn" value="${esc(it.barn ?? '')}"></label><label class="f">التخلص<select data-pi="${i}" data-k="method">${DMETHODS.map(m => `<option${m === it.method ? ' selected' : ''}>${m}</option>`).join('')}</select></label>`;
+  if (it.type === 'proc_new') return `<label class="f">الموعد<input type="date" data-pi="${i}" data-k="date" value="${esc(it.date)}"></label><label class="f">الإجراء<input data-pi="${i}" data-k="title" value="${esc(it.title ?? '')}"></label><label class="f">التصنيف<select data-pi="${i}" data-k="category">${PCATS.map(c => `<option${c === it.category ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></label><label class="f">التكرار<select data-pi="${i}" data-k="repeat">${Object.entries(REP).map(([k, v]) => `<option value="${k}"${(it.repeat || 'none') === k ? ' selected' : ''}>${v}</option>`).join('')}</select></label>`;
+  return date;
+}
+function renderPreview() {
+  $('#vcPreviewWrap').hidden = !vItems.length;
+  $('#vcPreview').innerHTML = vItems.map((it, i) => `<div class="pitem"><span class="tag"><i class="dot ${TYPE_UI[it.type].c}"></i>${TYPE_UI[it.type].l}</span><div class="fgrid">${previewFields(it, i)}</div><button class="btn sm ghost" type="button" data-prm="${i}" aria-label="إزالة">إزالة</button></div>`).join('');
+}
+$('#vcPreview').addEventListener('input', e => { const el = e.target.closest('[data-pi]'); if (!el) return; vItems[+el.dataset.pi][el.dataset.k] = el.value; });
+$('#vcPreview').addEventListener('change', e => { const el = e.target.closest('[data-pi]'); if (!el) return; vItems[+el.dataset.pi][el.dataset.k] = el.value; });
+$('#vcPreview').addEventListener('click', e => { const b = e.target.closest('[data-prm]'); if (!b) return;
+  const i = +b.dataset.prm; vItems.splice(i, 1);
+  vItems.forEach(o => { if (o.target && o.target.startsWith('b:')) { const j = +o.target.slice(2); if (j === i) o.target = null; else if (j > i) o.target = 'b:' + (j - 1); } });
+  if (!vItems.length) $('#vcPreviewWrap').hidden = true; else renderPreview(); });
+
+$('#vcSave').onclick = async () => {
+  if (!db) return toast('الحفظ غير متاح في هذا العرض', 'bad');
+  const btn = $('#vcSave'); btn.disabled = true; let ok = 0; const refs = {};
+  try {
+    for (const [i, it] of vItems.entries()) {
+      const date = it.type === 'proc_new' && okDate(it.date) ? it.date : today(); let r = null;
+      if (it.type === 'manure') r = await add('manure', {date, bags: Number(it.bags) || 0, barn: it.barn || '', direction: it.direction === 'out' ? 'out' : 'to_store', note: 'مسجل صوتيًا'});
+      else if (it.type === 'container') r = await add('containers', {date, count: Number(it.count) || 0, kind: it.kind || '', note: 'مسجل صوتيًا'});
+      else if (it.type === 'med_out') { r = await add('meds', {name: it.name || 'دواء', outDate: date, qty: it.qty || '', returnDate: '', note: 'مسجل صوتيًا'}); if (r) { refs[i] = r; await deductStock(it.name, it.qty); } }
+      else if (it.type === 'task') r = await add('tasks', {task: TASKS_ALL[it.task] ? it.task : 'farm_clean', date, by: '', note: 'مسجل صوتيًا', receipts: []});
+      else if (it.type === 'proc_new') { const pdata = {title: it.title || 'موعد', category: PCATS.includes(it.category) ? it.category : 'أخرى', dueDate: date, repeat: REP[it.repeat] ? it.repeat : 'none', party: '', remindDays: 3, note: 'مضاف صوتيًا', active: true, history: []};
+        r = await add('procedures', pdata);
+        if (r && mcp) { try { await calAdd({id: r.id, ...pdata}); } catch (er) { toast('انحفظ الموعد، لكن ما انضاف للتقويم: ' + calErr(er), 'bad'); } } }
+      else if (it.type === 'mortality') r = await add('mortality', {date, count: Number(it.count) || 0, barn: it.barn || '', method: DMETHODS.includes(it.method) ? it.method : 'حرق', cause: it.cause || '', note: 'مسجل صوتيًا', receipts: []});
+      else if (it.type === 'proc_done' && it.target) { try { r = await markProcDone(it.target, date); } catch (er) { toast(dbErr(er), 'bad'); } }
+      if (r) ok++;
+    }
+    for (const it of vItems.filter(x => x.type === 'med_return')) {
+      const date = today(); const tg = it.target || 'new';
+      try {
+        if (tg.startsWith('b:') && refs[+tg.slice(2)]) { await refs[+tg.slice(2)].update({returnDate: date}); ok++; }
+        else if (tg.startsWith('d:')) { await db.collection('meds').doc(tg.slice(2)).update({returnDate: date}); ok++; }
+        else if (await add('meds', {name: it.name || 'دواء', outDate: '', qty: '', returnDate: date, note: 'رجوع عبوة بدون إخراج مسجل'})) ok++;
+      } catch (er) { toast(dbErr(er), 'bad'); }
+    }
+    toast(`تم حفظ ${ok} سجل`); vItems = []; $('#vcPreviewWrap').hidden = true; ta.value = ''; $('#vcPartial').textContent = ''; $('#vcStatus').textContent = '';
+  } finally { btn.disabled = false; }
+};
+
+/* ---------- boot ---------- */
+let logoData = '';
+fetch('logo.png').then(r => r.ok ? r.blob() : null).then(b => { if (!b) return; const fr = new FileReader(); fr.onload = () => { logoData = String(fr.result || ''); }; fr.readAsDataURL(b); }).catch(() => {});
+setDefaults(); route(); renderAll();
+const C = window.claude;
+if (!C || !C.use) { $('#noDb').hidden = false; setSync('غير متصل', 'bad'); micBtn.hidden = false; return; }
+C.use('db').then(d => {
+  db = d;
+  if (!db) { $('#noDb').hidden = false; setSync('الحفظ غير متاح', 'bad'); return; }
+  const pending = new Set(COLS);
+  const timer = setTimeout(() => setSync('تعذّر الوصول للبيانات حتى الآن…', 'warn'), 10000);
+  COLS.forEach(c => db.collection(c).onSnapshot(snap => {
+    S[c] = snap.docs.map(x => ({id: x.id, ...x.data()}));
+    if (!snap.metadata.fromCache) { pending.delete(c); if (!pending.size) { clearTimeout(timer); setSync('محفوظ ومتزامن', 'good'); } }
+    renderAll();
+  }, () => { clearTimeout(timer); setSync('انقطع الاتصال بالبيانات. أعد فتح الصفحة.', 'bad'); }));
+  db.doc('config/farm').onSnapshot(s => { S.settings = s.exists ? (s.data() || {}) : {}; renderSettings(); renderAll(); }, () => {});
+}).catch(() => { $('#noDb').hidden = false; });
+C.use('mcp').then(m => { mcp = m; $$('.calOnly').forEach(el => el.hidden = !m); renderAll(); }).catch(() => {});
+C.use('user').then(async u => { userCap = u; if (!u) return; try { myId = await u.id(); } catch {} namesAsked.clear(); resolveNames(); }).catch(() => {});
+C.use('assets').then(a => { assets = a; }).catch(() => {});
+C.use('sample').then(s => { sample = s; if (!s) $('#vcGo').title = 'التوزيع التلقائي غير متاح هنا'; }).catch(() => {});
+C.use('downloads').then(d => { downloads = d; if (!d) { $('#dlHtml').hidden = true; $('#dlCsv').hidden = true; } }).catch(() => {});
+C.use('dictation').then(d => {
+  dict = d; if (!d) { micBtn.title = 'الميكروفون غير متاح في هذا المتصفح'; micBtn.style.opacity = '.5'; return; }
+  d.onPartial(({text}) => { $('#vcPartial').textContent = text; });
+  d.onFinal(({text}) => { ta.value = ta.value ? ta.value + text : text.trimStart(); $('#vcPartial').textContent = ''; });
+  d.onState(({state, reason}) => {
+    const live = state === 'listening' || state === 'starting';
+    micBtn.classList.toggle('live', live || state === 'finishing');
+    micBtn.setAttribute('aria-label', live ? 'إيقاف الميكروفون' : 'تشغيل الميكروفون');
+    $('#vcStatus').textContent = state === 'listening' ? 'أسمعك… اضغط الميكروفون مرة ثانية إذا خلصت' : state === 'starting' ? 'جارِ تشغيل الميكروفون…' : state === 'finishing' ? 'لحظة…' : (reason === 'upstream_error' ? 'انقطع الميكروفون، حاول مرة ثانية' : '');
+  });
+}).catch(() => {});
+})();
+</script>
+</body>
+</html>
