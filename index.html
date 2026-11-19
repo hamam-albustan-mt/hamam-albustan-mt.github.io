@@ -4,7 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>سجل المتابعة البيئية لشركة حمام البستان</title>
-<link rel="icon" href="logo.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="حمام البستان">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#3a8a34">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
 <style>
@@ -341,6 +347,11 @@ details.settings[open] summary{margin-bottom:12px}
           <div><h1 id="todayTitle">اليوم</h1><p id="todaySub"></p></div>
         </div>
 
+        <div id="installCard" class="card" hidden style="border-color:var(--accent)">
+          <div class="card-h"><h2>ثبّت السجل كتطبيق</h2><button class="btn ghost sm" type="button" id="installHide">إخفاء</button></div>
+          <p style="margin:0 0 10px" id="installText">تنزل أيقونة حمام البستان على شاشة جوالك أو سطح مكتبك، وتفتح السجل بضغطة وحدة بملء الشاشة.</p>
+          <button class="btn pri" type="button" id="installBtn" hidden>ثبّت التطبيق</button>
+        </div>
         <div id="exBanner" class="banner warn" hidden>
           <span>بعض السجلات المعروضة <b>أمثلة تجريبية</b> لتوضيح طريقة العمل. امسحها قبل ما تبدأ التسجيل الفعلي.</span>
           <button class="btn sm danger" id="clearEx" type="button">امسح الأمثلة</button>
@@ -2130,6 +2141,28 @@ $('#vcSave').onclick = async () => {
     toast(`تم حفظ ${ok} سجل`); vItems = []; $('#vcPreviewWrap').hidden = true; ta.value = ''; $('#vcPartial').textContent = ''; $('#vcStatus').textContent = '';
   } finally { btn.disabled = false; }
 };
+
+/* ---------- install as an app (phone home screen / desktop) ---------- */
+(() => {
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  let hidden = false; try { hidden = localStorage.getItem('installHidden') === '1'; } catch {}
+  if (standalone || hidden) return;
+  const card = $('#installCard'), btn = $('#installBtn'), text = $('#installText');
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let deferred = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; card.hidden = false; btn.hidden = false; });
+  addEventListener('appinstalled', () => { card.hidden = true; toast('تم تثبيت التطبيق. تلقاه على شاشة جهازك.'); });
+  btn.onclick = async () => { if (!deferred) return; deferred.prompt(); try { await deferred.userChoice; } catch {} deferred = null; btn.hidden = true; };
+  $('#installHide').onclick = () => { card.hidden = true; try { localStorage.setItem('installHidden', '1'); } catch {} };
+  if (ios) {
+    card.hidden = false;
+    text.innerHTML = /CriOS|FxiOS|EdgiOS/.test(ua)
+      ? 'في الآيفون افتح الرابط في <b>Safari</b>، بعدين اضغط زر المشاركة <b>⬆️</b> تحت، واختر <b>"إضافة إلى الشاشة الرئيسية"</b>.'
+      : 'اضغط زر المشاركة <b>⬆️</b> تحت الشاشة، وانزل واختر <b>"إضافة إلى الشاشة الرئيسية"</b>، بعدين اضغط <b>"إضافة"</b>.';
+  }
+})();
 
 /* ---------- boot ---------- */
 let logoData = '';
