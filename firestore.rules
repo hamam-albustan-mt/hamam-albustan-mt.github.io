@@ -1,0 +1,23 @@
+rules_version = '2';
+
+// قواعد حماية سجل المتابعة البيئية لشركة حمام البستان (منشورة في Firebase).
+// هذا الملف نسخة مرجعية في جهازك فقط، لا ترفعه على GitHub لأن فيه إيميلك.
+// المستخدمون يُضافون من داخل الموقع (الرئيسية ← المستخدمون والصلاحيات) وينحفظون في مجموعة members.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function em() { return request.auth.token.email.lower(); }
+    function isOwner() { return signedIn() && em() in ['kfs0541212244@gmail.com']; }
+    function isMember() { return signedIn() && exists(/databases/$(database)/documents/members/$(em())); }
+    function isAdmin() { return isOwner() || (isMember() && get(/databases/$(database)/documents/members/$(em())).data.role == 'admin'); }
+
+    match /members/{m} {
+      allow read: if isOwner() || isMember();
+      allow write: if isAdmin();
+    }
+    match /{col}/{rest=**} {
+      allow read, create, update: if col != 'members' && (isOwner() || isMember());
+      allow delete: if col != 'members' && isAdmin();
+    }
+  }
+}

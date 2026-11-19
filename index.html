@@ -88,6 +88,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 body.worker .rail{display:none}
 body.worker #app{grid-template-columns:minmax(0,1fr)}
 body.worker .searchbar{display:none}
+body.nonadmin [data-del],body.nonadmin #clearEx,body.nonadmin #usersCard,body.nonadmin #bkRestoreBtn{display:none!important}
+@media (max-width:860px){.who{padding-inline:0}}
 .worker-view input,.worker-view select{font-size:1.15rem;padding:12px}
 .worker-view .btn{font-size:1.05rem;padding:12px 18px}
 .worker-view h2{display:flex;align-items:center;gap:8px}
@@ -255,6 +257,7 @@ details.settings[open] summary{margin-bottom:12px}
       </form>
     </div>
     <div class="err" id="authErr" role="alert"></div>
+    <div class="row" id="authExtra" style="justify-content:center"></div>
     <button class="btn" type="button" id="authOut" hidden>تسجيل خروج</button>
   </div>
 </div>
@@ -291,7 +294,7 @@ details.settings[open] summary{margin-bottom:12px}
 
       <!-- WORKER -->
       <section data-view="worker" class="wrap worker-view" hidden>
-        <div class="card kit-head"><img src="logo.png" alt="حمام البستان"><div style="flex:1;min-width:0"><h1>تسجيل سريع</h1><p class="muted" id="wDate" style="margin:4px 0 0"></p></div><a class="btn" href="#home">الصفحة الكاملة</a></div>
+        <div class="card kit-head"><img src="logo.png" alt="حمام البستان"><div style="flex:1;min-width:0"><h1>تسجيل سريع</h1><p class="muted" id="wDate" style="margin:4px 0 0"></p></div><div class="row"><a class="btn" href="#home">الصفحة الكاملة</a><button class="btn ghost" type="button" data-signout>تسجيل خروج</button></div></div>
         <div class="card">
           <h2><i class="dot c-tasks"></i> نظافة اليوم</h2>
           <div class="row" id="quickClean2" style="margin-top:10px"></div>
@@ -393,6 +396,19 @@ details.settings[open] summary{margin-bottom:12px}
             <button class="btn pri" type="submit">حفظ البيانات</button>
           </form>
         </details>
+
+        <div class="card" id="usersCard" hidden>
+          <div class="card-h"><h2>المستخدمون والصلاحيات</h2><small id="usersCount"></small></div>
+          <p class="muted" style="margin:0 0 12px">بس الإيميلات اللي في هذي القائمة تقدر تدخل السجل. <b>المدير</b> يقدر يضيف مستخدمين ويحذف سجلات. <b>المستخدم</b> يسجّل ويعدّل بس، وما يحذف.</p>
+          <form class="grid" id="fUser">
+            <label class="f">البريد الإلكتروني<input type="email" id="u_email" required autocomplete="off" placeholder="name@gmail.com"></label>
+            <label class="f">الاسم<input id="u_name" placeholder="اختياري: اسم العامل أو المشرف"></label>
+            <label class="f">الصلاحية<select id="u_role"><option value="user">مستخدم: يسجّل ويعدّل</option><option value="admin">مدير: كل الصلاحيات</option></select></label>
+            <button class="btn pri" type="submit">إضافة مستخدم</button>
+          </form>
+          <div id="usersTbl" style="margin-top:14px"></div>
+          <small class="muted" style="display:block;margin-top:10px">بعد الإضافة أرسل له رابط الموقع. يدخل بحساب Google بنفس البريد، أو يضغط "أنشئ حساب" ويسجّل بنفس البريد وكلمة مرور، وبعدها يفعّل بريده من الرسالة اللي توصله.</small>
+        </div>
 
         <div class="card" id="backupCard">
           <div class="card-h"><h2>النسخة الاحتياطية</h2><small id="backupInfo"></small></div>
@@ -717,33 +733,66 @@ details.settings[open] summary{margin-bottom:12px}
     'auth/popup-closed-by-user': 'سكّرت نافذة Google قبل ما تكمل.', 'auth/unauthorized-domain': 'رابط الموقع مو مضاف في Firebase ← Authentication ← Settings ← Authorized domains.',
     'auth/operation-not-allowed': 'طريقة الدخول هذي مو مفعّلة في Firebase ← Authentication ← Sign-in method.', 'auth/network-request-failed': 'ما فيه اتصال بالإنترنت.',
   };
+  auth.languageCode = 'ar';  // password-reset and verification emails arrive in Arabic
   const fail = e => err(AR[e && e.code] || ('تعذّر الدخول: ' + ((e && e.message) || '')));
+  const info = m => { $('#authErr').textContent = ''; $('#authMsg').textContent = m; };
   let signup = false;
   $('#au_toggle').onclick = () => { signup = !signup; $('#nameRow').hidden = !signup; $('#au_go').textContent = signup ? 'إنشاء حساب' : 'دخول'; $('#au_toggle').textContent = signup ? 'عندك حساب؟ سجّل دخول' : 'ما عندك حساب؟ أنشئ حساب'; err(''); };
   $('#gSignIn').onclick = () => { err(''); auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(fail); };
   $('#fLogin').onsubmit = async e => { e.preventDefault(); err('');
     const em = $('#au_email').value.trim(), pw = $('#au_pass').value;
     try {
-      if (signup) { const c = await auth.createUserWithEmailAndPassword(em, pw); const nm = $('#au_name').value.trim(); if (nm) await c.user.updateProfile({displayName: nm}); }
+      if (signup) { const c = await auth.createUserWithEmailAndPassword(em, pw); const nm = $('#au_name').value.trim(); if (nm) await c.user.updateProfile({displayName: nm}); await c.user.sendEmailVerification(); }
       else await auth.signInWithEmailAndPassword(em, pw);
     } catch (er) { fail(er); } };
-  $('#au_reset').onclick = () => { const em = $('#au_email').value.trim(); if (!em) return err('اكتب بريدك أول، بعدين اضغط "نسيت كلمة المرور".'); auth.sendPasswordResetEmail(em).then(() => err('أرسلنا رابط تغيير كلمة المرور لبريدك.')).catch(fail); };
+  $('#au_reset').onclick = () => {
+    const em = $('#au_email').value.trim();
+    if (!em) return err('اكتب بريدك في خانة البريد أول، بعدين اضغط "نسيت كلمة المرور".');
+    auth.sendPasswordResetEmail(em).then(() => info(`إذا كان فيه حساب بالبريد ${em}، بيوصلك رابط تغيير كلمة المرور خلال دقائق. شيّك على البريد الوارد والرسائل غير المرغوب فيها (Spam).`)).catch(fail);
+  };
   const out = () => auth.signOut().then(() => location.reload());
   $('#authOut').onclick = out; $('#signOut').onclick = out;
+  document.addEventListener('click', e => { if (e.target.closest('[data-signout]')) out(); });
+  const lock = (msg, extra) => {
+    auth$.hidden = false; $('#authForms').hidden = true; $('#authOut').hidden = false; err('');
+    $('#authMsg').textContent = msg;
+    const box = $('#authExtra'); box.innerHTML = ''; if (extra) box.append(...extra);
+  };
   let started = false;
   auth.onAuthStateChanged(async u => {
-    if (!u) { auth$.hidden = false; return; }
-    const name = u.displayName || (u.email || '').split('@')[0];
-    try { await fs.collection('users').doc(u.uid).set({name, email: u.email || '', lastSeen: new Date().toISOString()}, {merge: true}); }
-    catch (e) {
-      auth$.hidden = false; $('#authForms').hidden = true; $('#authOut').hidden = false;
-      $('#authMsg').textContent = e && e.code === 'permission-denied' ? `حسابك (${u.email}) مو مضاف في قائمة المسموح لهم. اطلب من صاحب المزرعة يضيف بريدك في قواعد Firestore.` : 'تعذّر الاتصال بقاعدة البيانات. تأكد إنك أنشأت Firestore Database في مشروع Firebase.';
+    if (!u) { auth$.hidden = false; $('#authForms').hidden = false; $('#authOut').hidden = true; $('#authExtra').innerHTML = ''; return; }
+    const email = (u.email || '').toLowerCase();
+    /* accounts made with email + password must confirm the address before they get in */
+    const pwOnly = u.providerData.every(p => p.providerId === 'password');
+    if (pwOnly && !u.emailVerified) {
+      const again = Object.assign(document.createElement('button'), {className: 'btn', type: 'button', textContent: 'أرسل رابط التفعيل مرة ثانية'});
+      again.onclick = () => u.sendEmailVerification().then(() => info('أرسلنا رابط التفعيل مرة ثانية. شيّك على البريد الوارد والـ Spam.')).catch(fail);
+      const done = Object.assign(document.createElement('button'), {className: 'btn pri', type: 'button', textContent: 'فعّلت بريدي، دخّلني'});
+      done.onclick = async () => { await u.reload(); if (auth.currentUser.emailVerified) { await auth.currentUser.getIdToken(true); location.reload(); } else err('لسا ما تفعّل. افتح الرابط اللي في الرسالة أول.'); };
+      lock(`أرسلنا رابط تفعيل للبريد ${u.email}. افتح الرسالة واضغط الرابط، بعدين ارجع هنا واضغط "فعّلت بريدي".`, [done, again]);
       return;
     }
-    auth$.hidden = true; $('#who').hidden = false; $('#whoName').textContent = name;
+    const name = u.displayName || email.split('@')[0];
+    try { await fs.collection('users').doc(u.uid).set({name, email, lastSeen: new Date().toISOString()}, {merge: true}); }
+    catch (e) {
+      lock(e && e.code === 'permission-denied'
+        ? `حسابك (${u.email}) مو مضاف في قائمة المستخدمين. اطلب من مدير السجل يضيف بريدك من: الرئيسية ← المستخدمون والصلاحيات.`
+        : 'تعذّر الاتصال بقاعدة البيانات. تأكد من الإنترنت وحاول مرة ثانية.');
+      return;
+    }
+    /* role: the owner (named only in the private security rules) becomes admin on first sign-in */
+    let role = 'user';
+    try {
+      const ref = fs.collection('members').doc(email);
+      let m = await ref.get();
+      if (!m.exists) { try { await ref.set({email, name, role: 'admin', addedAt: new Date().toISOString(), addedBy: u.uid}); m = await ref.get(); } catch {} }
+      if (m.exists) role = (m.data() || {}).role === 'admin' ? 'admin' : 'user';
+    } catch {}
+    document.body.classList.toggle('nonadmin', role !== 'admin');
+    auth$.hidden = true; $('#who').hidden = false; $('#whoName').textContent = `${name} · ${role === 'admin' ? 'مدير' : 'مستخدم'}`;
     if (started) return; started = true;
     caps.db = fs;
-    caps.user = { id: async () => u.uid, profiles: async ids => { const res = {}; await Promise.all(ids.map(async id => { try { const s = await fs.collection('users').doc(id).get(); if (s.exists) res[id] = {name: (s.data() || {}).name || ''}; } catch {} })); return res; } };
+    caps.user = { role, email, id: async () => u.uid, profiles: async ids => { const res = {}; await Promise.all(ids.map(async id => { try { const s = await fs.collection('users').doc(id).get(); if (s.exists) res[id] = {name: (s.data() || {}).name || ''}; } catch {} })); return res; } };
     ready();
   });
 })();
@@ -2070,7 +2119,39 @@ C.use('db').then(d => {
   db.doc('config/farm').onSnapshot(s => { S.settings = s.exists ? (s.data() || {}) : {}; renderSettings(); renderAll(); }, () => {});
 }).catch(() => { $('#noDb').hidden = false; });
 C.use('mcp').then(m => { mcp = m; $$('.calOnly').forEach(el => el.hidden = !m); renderAll(); }).catch(() => {});
-C.use('user').then(async u => { userCap = u; if (!u) return; try { myId = await u.id(); } catch {} namesAsked.clear(); resolveNames(); }).catch(() => {});
+C.use('user').then(async u => { userCap = u; if (!u) return; try { myId = await u.id(); } catch {} namesAsked.clear(); resolveNames(); if (u.role === 'admin') startUsers(u.email); }).catch(() => {});
+
+/* ---------- users & roles (admins only; enforced by the Firestore rules) ---------- */
+let MEMBERS = [];
+function startUsers(myEmail) {
+  if (!db) return;
+  $('#usersCard').hidden = false;
+  const render = () => {
+    const admins = MEMBERS.filter(m => m.role === 'admin').length;
+    $('#usersCount').textContent = `${N(MEMBERS.length)} مستخدم · ${N(admins)} مدير`;
+    $('#usersTbl').innerHTML = table([{t:'البريد'},{t:'الاسم'},{t:'الصلاحية'},{t:'أُضيف'},{t:''}], MEMBERS.slice().sort((a, b) => (a.role === 'admin' ? 0 : 1) - (b.role === 'admin' ? 0 : 1) || String(a.id).localeCompare(String(b.id))).map(m => {
+      const me = m.id === myEmail;
+      return `<tr><td dir="ltr" style="text-align:start"><b>${esc(m.id)}</b>${me ? ' <span class="chip mute">أنت</span>' : ''}</td><td>${esc(m.name || '—')}</td>
+        <td>${me ? `<span class="chip good">${m.role === 'admin' ? 'مدير' : 'مستخدم'}</span>` : `<select data-urole="${esc(m.id)}" aria-label="صلاحية ${esc(m.id)}" style="width:auto;padding:5px 8px"><option value="user"${m.role !== 'admin' ? ' selected' : ''}>مستخدم</option><option value="admin"${m.role === 'admin' ? ' selected' : ''}>مدير</option></select>`}</td>
+        <td>${esc(fd(String(m.addedAt || '').slice(0, 10)))}</td>
+        <td>${me ? '' : `<button class="btn sm ghost danger" type="button" data-udel="${esc(m.id)}">إزالة</button>`}</td></tr>`;
+    })) || empty('ما فيه مستخدمين.');
+  };
+  db.collection('members').onSnapshot(s => { MEMBERS = s.docs.map(d => ({id: d.id, ...d.data()})); render(); }, () => { $('#usersTbl').innerHTML = empty('ما قدرت أقرأ قائمة المستخدمين.'); });
+  $('#fUser').onsubmit = e => { e.preventDefault(); withBtn(e.target, async () => {
+    const email = val('u_email').toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('اكتب بريد صحيح', 'bad');
+    if (MEMBERS.some(m => m.id === email)) return toast('هذا البريد مضاف من قبل', 'bad');
+    try { await db.collection('members').doc(email).set({email, name: val('u_name'), role: $('#u_role').value === 'admin' ? 'admin' : 'user', addedAt: new Date().toISOString(), addedBy: myId || ''});
+      toast(`انضاف ${email}. أرسل له رابط الموقع.`); ['u_email','u_name'].forEach(id => $('#' + id).value = ''); $('#u_role').value = 'user'; }
+    catch (er) { toast(er && er.code === 'permission-denied' ? 'ما عندك صلاحية إضافة مستخدمين.' : 'تعذّرت الإضافة، حاول مرة ثانية.', 'bad'); }
+  }); };
+  $('#usersTbl').addEventListener('change', async e => { const s = e.target.closest('[data-urole]'); if (!s) return;
+    try { await db.collection('members').doc(s.dataset.urole).update({role: s.value === 'admin' ? 'admin' : 'user'}); toast('تغيّرت الصلاحية'); } catch { toast('تعذّر تغيير الصلاحية', 'bad'); } });
+  $('#usersTbl').addEventListener('click', async e => { const b = e.target.closest('[data-udel]'); if (!b) return;
+    if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'تأكيد الإزالة'; setTimeout(() => { b.classList.remove('armed'); b.textContent = 'إزالة'; }, 4000); return; }
+    try { await db.collection('members').doc(b.dataset.udel).delete(); toast('انشال المستخدم. ما عاد يقدر يدخل السجل.'); } catch { toast('تعذّرت الإزالة', 'bad'); } });
+}
 C.use('assets').then(a => { assets = a; }).catch(() => {});
 C.use('sample').then(s => { sample = s; if (!s) $('#vcGo').title = 'التوزيع التلقائي غير متاح هنا'; }).catch(() => {});
 C.use('downloads').then(d => { downloads = d; if (!d) { $('#dlHtml').hidden = true; $('#dlCsv').hidden = true; } }).catch(() => {});
